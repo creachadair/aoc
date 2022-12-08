@@ -1,4 +1,4 @@
---- Day 1: Calorie Counting ---
+# Day 1: Calorie Counting
 
 Santa's reindeer typically eat regular reindeer food, but they need a lot of
 magical energy to deliver presents on Christmas. For that, their favorite snack
@@ -28,6 +28,7 @@ inventory (if any) by a blank line.
 For example, suppose the Elves finish writing their items' Calories and end up
 with the following list:
 
+```
 1000
 2000
 3000
@@ -42,6 +43,7 @@ with the following list:
 9000
 
 10000
+```
 
 This list represents the Calories of the food carried by five Elves:
 

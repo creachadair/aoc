@@ -1,4 +1,5 @@
---- Day 3: Rucksack Reorganization ---
+# Day 3: Rucksack Reorganization
+
 One Elf has the important job of loading all of the rucksacks with supplies for
 the jungle journey. Unfortunately, that Elf didn't quite follow the packing
 instructions, and so a few items now need to be rearranged.
@@ -21,12 +22,14 @@ second compartment.
 For example, suppose you have the following list of contents from six
 rucksacks:
 
+```
 vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
+```
 
 - The first rucksack contains the items vJrwpWtwJgWrhcsFMMfFFhFp, which means
   its first compartment contains the items vJrwpWtwJgWr, while the second

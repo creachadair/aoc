@@ -1,4 +1,5 @@
---- Day 2: Rock Paper Scissors ---
+# Day 2: Rock Paper Scissors
+
 The Elves begin to set up camp on the beach. To decide whose tent gets to be
 closest to the snack storage, a giant Rock Paper Scissors tournament is already
 in progress.
@@ -31,9 +32,11 @@ guide.
 
 For example, suppose you were given the following strategy guide:
 
+```
 A Y
 B X
 C Z
+```
 
 This strategy guide predicts and recommends the following:
 
@@ -47,6 +50,8 @@ This strategy guide predicts and recommends the following:
 - The third round is a draw with both players choosing Scissors, giving you a
   score of 3 + 3 = 6.
 
-In this example, if you were to follow the strategy guide, you would get a total score of 15 (8 + 1 + 6).
+In this example, if you were to follow the strategy guide, you would get a
+total score of 15 (8 + 1 + 6).
 
-What would your total score be if everything goes exactly according to your strategy guide?
+What would your total score be if everything goes exactly according to your
+strategy guide?

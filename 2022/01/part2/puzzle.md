@@ -1,4 +1,5 @@
---- Part Two ---
+# Part Two
+
 By the time you calculate the answer to the Elves' question, they've already
 realized that the Elf carrying the most Calories of food might eventually run
 out of snacks.
@@ -14,4 +15,3 @@ Calories), then the third Elf (with 11000 Calories), then the fifth Elf (with
 
 Find the top three Elves carrying the most Calories. How many Calories are
 those Elves carrying in total?
-

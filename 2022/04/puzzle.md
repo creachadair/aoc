@@ -1,4 +1,5 @@
---- Day 4: Camp Cleanup ---
+# Day 4: Camp Cleanup
+
 Space needs to be cleared before the last supplies can be unloaded from the
 ships, and so several Elves have been assigned the job of cleaning up sections
 of the camp. Every section has a unique ID number, and each Elf is assigned a
@@ -11,12 +12,14 @@ list of the section assignments for each pair (your puzzle input).
 
 For example, consider the following list of section assignment pairs:
 
+```
 2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7
 6-6,4-6
 2-6,4-8
+```
 
 For the first few pairs, this list means:
 
@@ -28,11 +31,12 @@ For the first few pairs, this list means:
 
 - The Elves in the third pair were each assigned three sections: one got
   sections 5, 6, and 7, while the other also got 7, plus 8 and 9.
-  
+
 - This example list uses single-digit section IDs to make it easier to draw;
   your actual list might contain larger numbers. Visually, these pairs of
   section assignments look like this:
 
+```
 .234.....  2-4
 .....678.  6-8
 
@@ -50,6 +54,7 @@ For the first few pairs, this list means:
 
 .23456...  2-6
 ...45678.  4-8
+```
 
 Some of the pairs have noticed that one of their assignments fully contains the
 other. For example, 2-8 fully contains 3-7, and 6-6 is fully contained by

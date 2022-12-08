@@ -1,4 +1,5 @@
---- Part Two ---
+# Part Two
+
 As you finish identifying the misplaced items, the Elves come to you with
 another issue.
 
@@ -21,15 +22,19 @@ Every set of three lines in your list corresponds to a single group, but each
 group can have a different badge item type. So, in the above example, the first
 group's rucksacks are the first three lines:
 
+```
 vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
+```
 
 And the second group's rucksacks are the next three lines:
 
+```
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw
+```
 
 In the first group, the only item type that appears in all three rucksacks is
 lowercase r; this must be their badges. In the second group, their badge item

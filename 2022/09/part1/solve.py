@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, sys
+from grid import grid
 input_name = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
 
 def shift(d, a):
@@ -23,15 +24,6 @@ class knot(object):
             self.x += shift(dx, adx)
             self.y += shift(dy, ady)
 
-def grid(h, t, nr=5, nc=6):
-    g = bytearray(b'.' * nr * nc)
-    g[t.y*nc + t.x] = ord(b'T')
-    g[h.y*nc + h.x] = ord(b'H')
-    lines = list(g[i:i+nc].decode('ascii') for i in range(0, len(g), nc))
-    lines.reverse()
-    print('\n'.join(lines))
-    print()
-
 with open(input_name, 'r') as fp:
     head, tail = knot(), knot()
     vis = set()    
@@ -42,4 +34,5 @@ with open(input_name, 'r') as fp:
             tail.follow(head)
             vis.add((tail.x, tail.y))
 
+grid([head, tail], vis)
 print(len(vis))

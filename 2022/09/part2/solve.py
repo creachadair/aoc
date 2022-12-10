@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, sys
+from grid import grid
 input_name = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
 
 def shift(d, a):
@@ -47,4 +48,5 @@ with open(input_name, 'r') as fp:
             tail = rope.tail()
             vis.add((tail.x, tail.y))
 
+grid(rope.knots, vis)
 print(len(vis))

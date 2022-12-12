@@ -4,6 +4,12 @@ import (
 	"strings"
 )
 
+var alt = []rune("🌊🟫🌱🌴🌳🟫🟨🦉🟤🔥🌧️🦔💎🌲🪨🪳🌲🗻🧊🟫💨🪨🗻🏔️")
+
+func init() {
+	println(len(alt))
+}
+
 type M struct {
 	Grid   []byte // packed rows
 	R, C   int    // number of rows, columns
@@ -29,7 +35,8 @@ func (m *M) String() string {
 			if ch > 127 {
 				buf.WriteByte(' ')
 			} else {
-				buf.WriteByte((ch & 0x7f) + 'a')
+				//buf.WriteByte((ch & 0x7f) + 'a')
+				buf.WriteRune(alt[ch&0x7f])
 			}
 		}
 		if (i+1)%m.C == 0 {

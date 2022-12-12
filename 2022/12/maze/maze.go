@@ -35,8 +35,15 @@ func (m *M) String() string {
 	return buf.String()
 }
 
+// GetRC returns the altitude at the specified coordinates.
 func (m *M) GetRC(r, c int) byte { return m.Grid[m.rcToPos(r, c)] }
 
+// BFS executes a breadth-first search starting at sr, sc.
+// The adj function reports whether (or, oc) is a valid neighbor of (r, c).
+// The goal function reports whether (r, c) is a valid goal state.
+//
+// It reports whether a path was found, and if so gives the sequence of grid
+// positions leading from the goal back to the origin.
 func (m *M) BFS(sr, sc int, adj func(r, c, or, oc int) bool, goal func(r, c int) bool) ([]int, bool) {
 	seen := make(map[int]bool)
 
@@ -73,14 +80,18 @@ func (m *M) BFS(sr, sc int, adj func(r, c, or, oc int) bool, goal func(r, c int)
 	return nil, false
 }
 
+// NotTooHigh accepts (or, oc) as a neighbor of (r, c) if its altitude is not
+// more than one unit higher than (r, c).
 func (m *M) NotTooHigh(r, c, or, oc int) bool {
 	return m.GetRC(r, c) <= m.GetRC(or, oc)+1
 }
 
+// IsEnd reports whether r, c is the end cell.
 func (m *M) IsEnd(r, c int) bool { return r == m.ER && c == m.EC }
 
 func concat(v int, path []int) []int { return append([]int{v}, path...) }
 
+// Parse parses an altitude map.
 func Parse(input string) *M {
 	rows := strings.Fields(input)
 	nr, nc := len(rows), len(rows[0])

@@ -32,4 +32,7 @@ func main() {
 		}
 	}
 	fmt.Println(len(minPath) - 1)
+
+	m.Plot(minPath)
+	fmt.Println(m)
 }

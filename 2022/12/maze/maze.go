@@ -26,13 +26,25 @@ func (m *M) String() string {
 		case m.rcToPos(m.ER, m.EC):
 			buf.WriteByte('E')
 		default:
-			buf.WriteByte(ch + 'a')
+			if ch > 127 {
+				buf.WriteByte(' ')
+			} else {
+				buf.WriteByte((ch & 0x7f) + 'a')
+			}
 		}
 		if (i+1)%m.C == 0 {
 			buf.WriteByte('\n')
 		}
 	}
 	return buf.String()
+}
+
+// Plot marks each grid cell in path so that the string output will highlight
+// those cells.
+func (m *M) Plot(path []int) {
+	for _, pos := range path {
+		m.Grid[pos] |= 0x80
+	}
 }
 
 // GetRC returns the altitude at the specified coordinates.

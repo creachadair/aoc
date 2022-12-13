@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"day8/treemap"
+	"aoc/2022/08/treemap"
 )
 
 var (

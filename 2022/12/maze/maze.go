@@ -2,6 +2,8 @@ package maze
 
 import (
 	"strings"
+
+	"github.com/creachadair/mlink"
 )
 
 type M struct {
@@ -59,18 +61,18 @@ func (m *M) GetRC(r, c int) byte { return m.Grid[m.rcToPos(r, c)] }
 func (m *M) BFS(sr, sc int, adj func(r, c, or, oc int) bool, goal func(r, c int) bool) ([]int, bool) {
 	seen := make(map[int]bool)
 
-	q := [][]int{{m.rcToPos(sr, sc)}} // inner slice is reverse path to origin
+	q := mlink.NewQueue[[]int]()
+	q.Add([]int{m.rcToPos(sr, sc)}) // slice is reverse path to origin
 	addIfNew := func(r, c int, tail []int) {
 		pos := m.rcToPos(r, c)
 		if !seen[pos] {
 			seen[pos] = true
-			q = append(q, concat(pos, tail))
+			q.Add(concat(pos, tail))
 		}
 	}
 
-	for len(q) != 0 {
-		next := q[0]
-		q = q[:copy(q, q[1:])]
+	for !q.IsEmpty() {
+		next, _ := q.Pop()
 
 		r, c := m.posToRC(next[0])
 		if goal(r, c) {

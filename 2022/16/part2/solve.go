@@ -45,7 +45,7 @@ func main() {
 	}
 
 	fmt.Println(best(g, []string{*startNode}, []string{*startNode}, 0, 0, 0))
-	log.Printf("optimizer calls=%d mhits=%d", ncalls.Value(), mhit.Value())
+	log.Printf("optimizer calls=%d mhits=%d limits=%d", ncalls.Value(), mhit.Value(), atend.Value())
 }
 
 func logPrintf(msg string, args ...any) {
@@ -63,6 +63,7 @@ type mem struct {
 var (
 	ncalls = expvar.NewInt("optimizer_calls")
 	mhit   = expvar.NewInt("memo_hits")
+	atend  = expvar.NewInt("time_limit_hits")
 	memo   = make(map[mem]int)
 )
 
@@ -72,9 +73,6 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 	if v, ok := memo[mem{cur1, cur2, step1, step2, value}]; ok {
 		mhit.Add(1)
 		return v
-	} else if step1 >= *maxSteps || step2 >= *maxSteps {
-		logPrintf("[%d/%d] out of time %v %v value %v", step1, step2, path1, path2, value)
-		return value
 	}
 
 	bestc1, bestc2, bestv := "", "", value
@@ -114,7 +112,14 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 			// We get the benefit of both improvements.
 			incr := valueAtStep(g, c1, astep1) + valueAtStep(g, c2, astep2)
 
-			nextv := best(g, append(path1, c1), append(path2, c2), astep1, astep2, value+incr)
+			var nextv int
+			if astep1 == *maxSteps || astep2 == *maxSteps {
+				atend.Add(1)
+				logPrintf("[%d/%d] out of time %v %v value %v", step1, step2, path1, path2, value)
+				nextv = value + incr
+			} else {
+				nextv = best(g, append(path1, c1), append(path2, c2), astep1, astep2, value+incr)
+			}
 			if nextv > bestv {
 				bestc1, bestc2, bestv = c1, c2, nextv
 			}

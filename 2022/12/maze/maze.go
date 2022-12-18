@@ -3,7 +3,7 @@ package maze
 import (
 	"strings"
 
-	"github.com/creachadair/mlink"
+	"github.com/creachadair/mds/mlink"
 )
 
 type M struct {

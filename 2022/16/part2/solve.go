@@ -64,11 +64,13 @@ var (
 	ncalls = expvar.NewInt("optimizer_calls")
 	mhit   = expvar.NewInt("memo_hits")
 	atend  = expvar.NewInt("time_limit_hits")
+	msize  = expvar.NewInt("memo_size")
 	memo   = make(map[mem]int)
 )
 
 func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) int {
 	ncalls.Add(1)
+	msize.Set(int64(len(memo)))
 	cur1, cur2 := path1[len(path1)-1], path2[len(path2)-1]
 	if v, ok := memo[mem{cur1, cur2, step1, step2, value}]; ok {
 		mhit.Add(1)

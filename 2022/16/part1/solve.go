@@ -30,7 +30,9 @@ func main() {
 		log.Fatalf("Read input: %v", err)
 	}
 
-	fmt.Println(best(g, []string{*startNode}, 0, 0))
+	path, v := best(g, []string{*startNode}, 0, 0)
+	fmt.Println(expandPath(g, path))
+	fmt.Println(v)
 	log.Printf("optimizer calls=%d mhits=%d", ncalls, mhit)
 }
 
@@ -45,20 +47,26 @@ type mem struct {
 	step, val int
 }
 
+type sval struct {
+	suffix []string
+	value  int
+}
+
 var (
 	ncalls, mhit int
-	memo         = make(map[mem]int)
+	memo         = make(map[mem]sval)
 )
 
-func best(g *graph.G[string], path []string, step, value int) int {
+func best(g *graph.G[string], path []string, step, value int) ([]string, int) {
 	ncalls++
 	cur := path[len(path)-1]
 	if v, ok := memo[mem{cur, step, value}]; ok {
 		mhit++
-		return v
+		return v.suffix, v.value
 	}
 
 	bestc, bestv := "", value
+	var suffix []string
 	logPrintf("[%d] start %v init %v", step, path, value)
 
 	for _, next := range g.Nodes() {
@@ -82,13 +90,14 @@ func best(g *graph.G[string], path []string, step, value int) int {
 			continue
 		}
 
-		nextv := best(g, append(path, next), astep, value+valueAtStep(g, next, astep))
+		nexts, nextv := best(g, append(path, next), astep, value+valueAtStep(g, next, astep))
 		if nextv > bestv {
 			bestv, bestc = nextv, next
+			suffix = append([]string{cur}, nexts...)
 		}
 	}
 
-	memo[mem{cur, step, value}] = bestv
+	memo[mem{cur, step, value}] = sval{suffix, bestv}
 
 	// It's possible no path we try from this point can improve our score.  That
 	// basically means we could stop here for the rest of the time period
@@ -96,7 +105,22 @@ func best(g *graph.G[string], path []string, step, value int) int {
 	if bestc != "" {
 		logPrintf("[%d] %v best %v total %v", step, path, bestc, bestv)
 	}
-	return bestv
+	return suffix, bestv
+}
+
+func expandPath(g *graph.G[string], path []string) []string {
+	if len(path) == 0 {
+		return nil
+	}
+	exp := []string{path[0]}
+	last := path[0]
+	for _, next := range path[1:] {
+		stem := g.Path(last, next)
+		exp = append(exp, stem[1:]...)
+		exp = append(exp, "*")
+		last = next
+	}
+	return exp
 }
 
 func nameInPath(name string, path []string) bool {

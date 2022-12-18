@@ -72,6 +72,9 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 	if v, ok := memo[mem{cur1, cur2, step1, step2, value}]; ok {
 		mhit.Add(1)
 		return v
+	} else if step1 >= *maxSteps || step2 >= *maxSteps {
+		logPrintf("[%d/%d] out of time %v %v value %v", step1, step2, path1, path2, value)
+		return value
 	}
 
 	bestc1, bestc2, bestv := "", "", value

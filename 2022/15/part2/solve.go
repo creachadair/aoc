@@ -112,33 +112,6 @@ func (s *sensor) dist(x, y int) int { return mdist(x, y, s.x, s.y) }
 
 func (s *sensor) minBeacon() int { return mdist(s.x, s.y, s.bx, s.by) }
 
-func xminmax(ss []*sensor) (xmin, xmax int) {
-	xmin, xmax = ss[0].x, ss[0].x
-	for _, s := range ss {
-		xmin = min(xmin, s.x, s.bx, s.x-s.minBeacon())
-		xmax = max(xmax, s.x, s.bx, s.x+s.minBeacon())
-	}
-	return
-}
-
-func max(a int, bs ...int) int {
-	for _, b := range bs {
-		if b > a {
-			a = b
-		}
-	}
-	return a
-}
-
-func min(a int, bs ...int) int {
-	for _, b := range bs {
-		if b < a {
-			a = b
-		}
-	}
-	return a
-}
-
 func abs(z int) int {
 	if z < 0 {
 		return -z

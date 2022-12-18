@@ -64,6 +64,7 @@ var (
 	ncalls = expvar.NewInt("optimizer_calls")
 	mhit   = expvar.NewInt("memo_hits")
 	atend  = expvar.NewInt("time_limit_hits")
+	noimp  = expvar.NewInt("no_growth_hits")
 	msize  = expvar.NewInt("memo_size")
 	memo   = make(map[mem]int)
 )
@@ -113,6 +114,10 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 
 			// We get the benefit of both improvements.
 			incr := valueAtStep(g, c1, astep1) + valueAtStep(g, c2, astep2)
+			if incr == 0 {
+				noimp.Add(1)
+				continue
+			}
 
 			var nextv int
 			if astep1 == *maxSteps || astep2 == *maxSteps {

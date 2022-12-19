@@ -60,6 +60,14 @@ type mem struct {
 	val          int
 }
 
+func memKey(node1, node2 string, step1, step2, val int) mem {
+	if node1 > node2 {
+		node1, node2 = node2, node1
+		step1, step2 = step2, step1
+	}
+	return mem{node1, node2, step1, step2, val}
+}
+
 var (
 	ncalls = expvar.NewInt("optimizer_calls")
 	mhit   = expvar.NewInt("memo_hits")
@@ -73,7 +81,8 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 	ncalls.Add(1)
 	msize.Set(int64(len(memo)))
 	cur1, cur2 := path1[len(path1)-1], path2[len(path2)-1]
-	if v, ok := memo[mem{cur1, cur2, step1, step2, value}]; ok {
+	mk := memKey(cur1, cur2, step1, step2, value)
+	if v, ok := memo[mk]; ok {
 		mhit.Add(1)
 		return v
 	}
@@ -133,7 +142,7 @@ func best(g *graph.G[string], path1, path2 []string, step1, step2, value int) in
 		}
 	}
 
-	memo[mem{cur1, cur2, step1, step2, value}] = bestv
+	memo[mk] = bestv
 
 	// It's possible no path we try from this point can improve our score.  That
 	// basically means we could stop here for the rest of the time period

@@ -30,6 +30,62 @@ func (m Map) Sum() int {
 	return sum
 }
 
+func (m Map) Bounds() (min, max Pos) {
+	var maxx, maxy, maxz int
+	for pos := range m {
+		if pos[0] > maxx {
+			maxx = pos[0]
+		}
+		if pos[1] > maxy {
+			maxy = pos[1]
+		}
+		if pos[2] > maxz {
+			maxz = pos[2]
+		}
+	}
+	minx, miny, minz := maxx, maxy, maxz
+	for pos := range m {
+		if pos[0] < minx {
+			minx = pos[0]
+		}
+		if pos[1] < miny {
+			miny = pos[1]
+		}
+		if pos[2] < minz {
+			minz = pos[2]
+		}
+	}
+	return Pos{minx, miny, minz}, Pos{maxx, maxy, maxz}
+}
+
+func (m Map) Flood() map[Pos]bool {
+	min, max := m.Bounds()
+	seed := Pos{min[0] - 1, min[1] - 1, min[2] - 1}
+
+	q := []Pos{seed}
+	marked := map[Pos]bool{seed: true}
+	for len(q) != 0 {
+		next := q[len(q)-1]
+		q = q[:len(q)-1]
+
+		for _, adj := range neighborsOf(next) {
+			// Filter out out-of-bound points. But note we allow one slice beyond
+			// the bounding cubes so we can't get trapped in a cul-de-sac.
+			if adj[0] < min[0]-1 || adj[1] < min[1]-1 || adj[2] < min[2]-2 {
+				continue // past the inner bounding point
+			} else if adj[0] > max[0]+1 || adj[1] > max[1]+1 || adj[2] > max[2]+2 {
+				continue // past the outer bounding point
+			} else if _, ok := m[adj]; ok || marked[adj] {
+				continue // skip marked cubes and cubes already in the map
+			}
+
+			marked[adj] = true
+			q = append(q, adj)
+		}
+	}
+	return marked
+}
+
 func neighborsOf(cube Pos) []Pos {
 	return []Pos{
 		{cube[0] - 1, cube[1], cube[2]},

@@ -98,7 +98,7 @@ func (g *Graph) topoSort() []string {
 	q.Add("root")
 
 	for !q.IsEmpty() {
-		next, _ := q.Top()
+		next := q.Top()
 		if seen[next] {
 			finished = append(finished, next)
 			q.Pop()

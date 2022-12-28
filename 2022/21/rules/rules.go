@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"regexp"
@@ -58,7 +59,7 @@ func MustParse(path string) []Rule {
 type Graph struct {
 	Rules  map[string]*Rule    // :: name → rule
 	Deps   map[string][]string // :: name → direct dependencies
-	Values map[string]int      // :: name → value (if known)
+	Values map[string]float64  // :: name → value (if known)
 }
 
 func NewGraph(rules []Rule) *Graph {
@@ -100,7 +101,7 @@ func (g *Graph) topoSort() []string {
 }
 
 func (g *Graph) Solve() {
-	g.Values = make(map[string]int)
+	g.Values = make(map[string]float64)
 
 	for _, id := range g.topoSort() {
 		r, ok := g.Rules[id]
@@ -108,7 +109,7 @@ func (g *Graph) Solve() {
 			log.Fatalf("No rule matching %q", id)
 		}
 		if r.Op == "" {
-			g.Values[id] = r.Value
+			g.Values[id] = float64(r.Value)
 			continue
 		}
 
@@ -138,5 +139,22 @@ func (g *Graph) Solve() {
 		default:
 			log.Fatalf("Invalid operator %q for %q", r.Op, id)
 		}
+	}
+}
+
+func (g *Graph) Dot(w io.Writer) {
+	fmt.Fprintf(w, "digraph G {\n")
+	fmt.Fprintln(w, `  node [shape=record];`)
+	defer fmt.Fprintln(w, "}")
+
+	for name, rule := range g.Rules {
+		if rule.Op != "" {
+			fmt.Fprintf(w, "  %s [label=\"{%s|%s %s %s}\"]\n", name, name, rule.LHS, rule.Op, rule.RHS)
+		} else {
+			fmt.Fprintf(w, "  %s [label=\"%s|%d\"]\n", name, name, rule.Value)
+		}
+	}
+	for name, deps := range g.Deps {
+		fmt.Fprintf(w, "  %s -> {%s}\n", name, strings.Join(deps, " "))
 	}
 }

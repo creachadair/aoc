@@ -13,6 +13,11 @@ import (
 	"github.com/creachadair/mds/mlink"
 )
 
+// A Rule is the parsed format of a puzzle input. As read from the input,
+// either Op == "", in which case value is the constant reported by that node,
+// or LHS and RHS give the names of the inputs to the operator.
+//
+// Valid input operators are "+", "-", "*", and "/".
 type Rule struct {
 	Name     string
 	Op       string
@@ -108,6 +113,9 @@ func (g *Graph) topoSort() []string {
 	return finished
 }
 
+// PreSolve resolves the values of all the nodes that can be statically solved
+// without knowing the values of any unknowns. If there are no "?" nodes in the
+// graph, this should solve every node.
 func (g *Graph) PreSolve() {
 	g.Values = make(map[string]float64)
 
@@ -140,6 +148,8 @@ func (g *Graph) PreSolve() {
 	}
 }
 
+// evaluate computes and caches the value for an operator rule r.  It panics if
+// either operand of r is not known.
 func (g *Graph) evaluate(r *Rule) float64 {
 	lhs, ok := g.Values[r.LHS]
 	if !ok {
@@ -163,7 +173,6 @@ func (g *Graph) evaluate(r *Rule) float64 {
 		if lhs == rhs {
 			g.Values[r.Name] = lhs
 		} else {
-			log.Printf("MJF :: wat %v neq %v", lhs, rhs)
 			g.Values[r.Name] = math.NaN()
 		}
 	default:
@@ -172,7 +181,11 @@ func (g *Graph) evaluate(r *Rule) float64 {
 	return g.Values[r.Name]
 }
 
-func (g *Graph) Solve(name string, target float64) (_f float64, _e error) {
+// Solve computes the value for the named node that will cause the dependents
+// of that node to compute the specified target value.
+func (g *Graph) Solve(name string, target float64) (float64, error) {
+	// Case 1: We already have the value for this node (e.g., a constant).
+	// Report success as long as that value is the target.
 	if v, ok := g.Values[name]; ok {
 		if v == target {
 			return v, nil
@@ -185,15 +198,19 @@ func (g *Graph) Solve(name string, target float64) (_f float64, _e error) {
 		return 0, fmt.Errorf("no rule for %q", rule)
 	}
 
-	// If the rule is an unresolved variable, we can resolve it directly to
-	// target.
+	// Case 2: The rule is an unresolved variable. We can resolve it directly to
+	// the target value. Note that if we already resolved it, we would catch
+	// that in Case 1 (and the unification check is there).
 	if rule.Op == "?" {
 		g.Values[name] = target
 		return target, nil
 	}
 
-	// Otherwise, exactly one of the arguments should be unknown (if both were
-	// known we would already have a value for this node from pre-solution).
+	// Case 3: Otherwise this is an operator node with exactly one unknown
+	// argument.  If both arguments were known, we would have computed this
+	// value during pre-solution. If neither argument is known, pre-solution
+	// would have failed (an optimization for this puzzle, where there is at
+	// most one unknown and no shared paths).
 	var comb func(bool, float64) float64
 	switch rule.Op {
 	case "+":

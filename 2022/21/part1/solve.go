@@ -19,9 +19,12 @@ func main() {
 
 	rs := rules.MustParse(*inputFile)
 	g := rules.NewGraph(rs)
-	g.Solve()
-
-	fmt.Printf("%d\n", int(g.Values["root"]))
+	g.PreSolve()
+	v, ok := g.Values["root"]
+	if !ok {
+		log.Fatal("Missing root value")
+	}
+	fmt.Printf("%d\n", int(v))
 
 	if *writeGraph != "" {
 		f, err := os.Create(*writeGraph)

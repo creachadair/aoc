@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
@@ -17,6 +18,13 @@ type Rule struct {
 	Op       string
 	LHS, RHS string
 	Value    int
+}
+
+func (r Rule) String() string {
+	if r.Op == "" {
+		return fmt.Sprintf("%s: %d", r.Name, r.Value)
+	}
+	return fmt.Sprintf("%s: %s %s %s", r.Name, r.LHS, r.Op, r.RHS)
 }
 
 var ruleRE = regexp.MustCompile(`(\w+): (?:(\d+)|(\w+) ([-+*/]) (\w+))`)
@@ -100,7 +108,7 @@ func (g *Graph) topoSort() []string {
 	return finished
 }
 
-func (g *Graph) Solve() {
+func (g *Graph) PreSolve() {
 	g.Values = make(map[string]float64)
 
 	for _, id := range g.topoSort() {
@@ -111,35 +119,145 @@ func (g *Graph) Solve() {
 		if r.Op == "" {
 			g.Values[id] = float64(r.Value)
 			continue
+		} else if r.Op == "?" || r.Op == "=" {
+			continue // placeholder for unresolved questions
 		}
 
-		lhs, ok := g.Values[r.LHS]
-		if !ok {
-			log.Fatalf("Missing LHS %q for %q", r.LHS, id)
+		// If we don't have both operands for a combining expression, just keep
+		// going for now; we'll come back to it during the resolution step.  But
+		// we should have at least one, otherwise the input is ill-formed: The
+		// puzzle has only one unknown and the input forms a tree.
+		_, lok := g.Values[r.LHS]
+		_, rok := g.Values[r.RHS]
+		if !lok && !rok {
+			log.Fatalf("Both operands missing for %q (%s)", id, r.Op)
+		} else if !lok || !rok {
+			continue
 		}
-		rhs, ok := g.Values[r.RHS]
-		if !ok {
-			log.Fatalf("Missing RHS %q for %q", r.RHS, id)
-		}
-		switch r.Op {
-		case "+":
-			g.Values[id] = lhs + rhs
-		case "-":
-			g.Values[id] = lhs - rhs
-		case "*":
-			g.Values[id] = lhs * rhs
-		case "/":
-			g.Values[id] = lhs / rhs
-		case "=":
-			if lhs == rhs {
-				g.Values[id] = lhs
-			} else {
-				g.Values[id] = -1 // sentinel for "unequal"
-			}
-		default:
-			log.Fatalf("Invalid operator %q for %q", r.Op, id)
-		}
+
+		// N.B. We've already filtered out "=" above.
+		g.evaluate(r)
 	}
+}
+
+func (g *Graph) evaluate(r *Rule) float64 {
+	lhs, ok := g.Values[r.LHS]
+	if !ok {
+		panic(fmt.Sprintf("missing lhs %q for %q", r.LHS, r.Name))
+	}
+	rhs, ok := g.Values[r.RHS]
+	if !ok {
+		panic(fmt.Sprintf("missing rhs %q for %q", r.RHS, r.Name))
+	}
+
+	switch r.Op {
+	case "+":
+		g.Values[r.Name] = lhs + rhs
+	case "-":
+		g.Values[r.Name] = lhs - rhs
+	case "*":
+		g.Values[r.Name] = lhs * rhs
+	case "/":
+		g.Values[r.Name] = lhs / rhs
+	case "=":
+		if lhs == rhs {
+			g.Values[r.Name] = lhs
+		} else {
+			log.Printf("MJF :: wat %v neq %v", lhs, rhs)
+			g.Values[r.Name] = math.NaN()
+		}
+	default:
+		panic(fmt.Sprintf("invalid operator %q for %q", r.Op, r.Name))
+	}
+	return g.Values[r.Name]
+}
+
+func (g *Graph) Solve(name string, target float64) (_f float64, _e error) {
+	if v, ok := g.Values[name]; ok {
+		if v == target {
+			return v, nil
+		}
+		return v, fmt.Errorf("value of %q is %v, not %v", name, v, target)
+	}
+
+	rule, ok := g.Rules[name]
+	if !ok {
+		return 0, fmt.Errorf("no rule for %q", rule)
+	}
+
+	// If the rule is an unresolved variable, we can resolve it directly to
+	// target.
+	if rule.Op == "?" {
+		g.Values[name] = target
+		return target, nil
+	}
+
+	// Otherwise, exactly one of the arguments should be unknown (if both were
+	// known we would already have a value for this node from pre-solution).
+	var comb func(bool, float64) float64
+	switch rule.Op {
+	case "+":
+		// target = ? + v or v + ?, so ? = target - v.
+		comb = func(_ bool, v float64) float64 { return target - v }
+
+	case "*":
+		// target = ? * v or v * ?, so ? = target / v.
+		comb = func(_ bool, v float64) float64 { return target / v }
+
+	case "=":
+		// Set the target for the unresolved branch to the resolved branch.
+		comb = func(_ bool, v float64) float64 { return v }
+
+	case "-":
+		// either target = v - ?, and ? = v - target
+		// or     target = ? - v, and ? = target + v
+		comb = func(left bool, v float64) float64 {
+			if left {
+				return v - target
+			}
+			return target + v
+		}
+
+	case "/":
+		// either target = v / ?, and ? = v / target
+		// or     target = ? / v, and ? = target * v
+		comb = func(left bool, v float64) float64 {
+			if left {
+				return v / target
+			}
+			return target * v
+		}
+
+	default:
+		panic(fmt.Sprintf("Invalid operator %q for %q", rule.Op, name))
+	}
+
+	// Choose the next rule that needs a solution (one of the children of this
+	// node), update the target, and recur. If this completes, we can then solve
+	// this node.
+	next, nextTarget := g.update(rule.LHS, rule.RHS, comb)
+	if v, err := g.Solve(next, nextTarget); err != nil {
+		return 0, err
+	} else {
+		g.Values[next] = v // resolve the missing branch
+	}
+	return g.evaluate(rule), nil
+}
+
+// update finds which of lhs and rhs already has a value, and calls comb with
+// that value. If neither has a value, update panics. The comb function should
+// produce a new target value given the operand.
+//
+// The flag tells comb whether the known operand value is the left (true) or
+// right (false).
+func (g *Graph) update(lhs, rhs string, comb func(left bool, v float64) float64) (string, float64) {
+	if v, ok := g.Values[lhs]; ok {
+		return rhs, comb(true, v) // N.B. return the name of the OTHER branch!
+	}
+	if v, ok := g.Values[rhs]; ok {
+		return lhs, comb(false, v)
+	}
+	panic("unreached")
 }
 
 func (g *Graph) Dot(w io.Writer) {

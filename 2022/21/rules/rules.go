@@ -56,18 +56,19 @@ func MustParse(path string) []Rule {
 }
 
 type Graph struct {
-	Rules  map[string]Rule     // :: name → rule
+	Rules  map[string]*Rule    // :: name → rule
 	Deps   map[string][]string // :: name → direct dependencies
 	Values map[string]int      // :: name → value (if known)
 }
 
 func NewGraph(rules []Rule) *Graph {
-	g := &Graph{Rules: make(map[string]Rule), Deps: make(map[string][]string)}
+	g := &Graph{Rules: make(map[string]*Rule), Deps: make(map[string][]string)}
 	for _, rule := range rules {
 		if prev, ok := g.Rules[rule.Name]; ok {
 			log.Fatalf("Duplicate rules for %q: %v, %v", rule.Name, prev, rule)
 		}
-		g.Rules[rule.Name] = rule
+		cp := rule
+		g.Rules[rule.Name] = &cp
 		if rule.Op != "" {
 			g.Deps[rule.Name] = []string{rule.LHS, rule.RHS}
 		}
@@ -128,6 +129,12 @@ func (g *Graph) Solve() {
 			g.Values[id] = lhs * rhs
 		case "/":
 			g.Values[id] = lhs / rhs
+		case "=":
+			if lhs == rhs {
+				g.Values[id] = lhs
+			} else {
+				g.Values[id] = -1 // sentinel for "unequal"
+			}
 		default:
 			log.Fatalf("Invalid operator %q for %q", r.Op, id)
 		}

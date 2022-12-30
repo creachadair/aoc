@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 
 	"aoc/2022/22/grid"
 )
@@ -16,9 +17,29 @@ func main() {
 	flag.Parse()
 
 	m := grid.MustParseInput(*inputFile)
-	fmt.Println(m.Tiles)
 
-	fmt.Println(m)
-	m.Tiles.Normalize(m)
-	fmt.Println(m)
+	c := grid.NewCursor(m)
+	for _, act := range m.Spec {
+		log.Printf("POS NOW %v,%v %v in %v", c.CR, c.CC, c.Head, c.Tile)
+		switch act.Op {
+		case "R":
+			log.Print("TURN RIGHT")
+			c.R()
+		case "L":
+			log.Print("TURN LEFT")
+			c.L()
+		case "":
+			log.Printf("FORWARD %d", act.N)
+			c.CF(act.N)
+		}
+		c.Plot()
+	}
+
+	if *doVerbose {
+		fmt.Println(m)
+	}
+	fmt.Println("Final:", c)
+
+	score := 1000*c.CR + 4*c.CC + int(c.Head)
+	fmt.Println("Score:", score)
 }

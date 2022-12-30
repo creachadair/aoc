@@ -28,6 +28,7 @@ type Map struct {
 	Data   []byte // packed rows
 	NR, NC int    // rows, columns
 	Spec   []Action
+	Tiles  Tiles
 
 	overlay map[int]byte
 }
@@ -118,7 +119,9 @@ func ParseMap(text string) (*Map, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Map{Data: data, NR: nr, NC: nc, Spec: spec}, nil
+	m := &Map{Data: data, NR: nr, NC: nc, Spec: spec}
+	m.Tiles = findTiles(m)
+	return m, nil
 }
 
 type Action struct {

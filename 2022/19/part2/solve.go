@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"aoc/2022/19/robot"
-
+	"github.com/creachadair/aoc/2022/19/robot"
 	"github.com/creachadair/mds/mlink"
 	"github.com/creachadair/taskgroup"
 )

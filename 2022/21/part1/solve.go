@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"aoc/2022/21/rules"
+	"github.com/creachadair/aoc/2022/21/rules"
 )
 
 var (

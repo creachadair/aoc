@@ -7,7 +7,7 @@ import (
 	"os"
 	"sort"
 
-	"aoc/2022/11/monkey"
+	"github.com/creachadair/aoc/2022/11/monkey"
 )
 
 var (

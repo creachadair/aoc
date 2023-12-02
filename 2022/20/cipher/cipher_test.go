@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"aoc/2022/20/cipher"
+	"github.com/creachadair/aoc/2022/20/cipher"
 )
 
 func TestCipher(t *testing.T) {

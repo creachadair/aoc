@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"aoc/2022/10/program"
+	"github.com/creachadair/aoc/2022/10/program"
 )
 
 var (

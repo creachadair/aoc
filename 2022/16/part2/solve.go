@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"aoc/2022/16/graph"
+	"github.com/creachadair/aoc/2022/16/graph"
 )
 
 var (

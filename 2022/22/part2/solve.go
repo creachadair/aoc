@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"aoc/2022/22/grid"
+	"github.com/creachadair/aoc/2022/22/grid"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"aoc/2022/20/cipher"
+	"github.com/creachadair/aoc/2022/20/cipher"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"aoc/2022/12/maze"
+	"github.com/creachadair/aoc/2022/12/maze"
 )
 
 var inputFile = flag.String("input", "input.txt", "Input file path")

@@ -6,8 +6,7 @@ import (
 	"log"
 	"sync/atomic"
 
-	"aoc/2022/19/robot"
-
+	"github.com/creachadair/aoc/2022/19/robot"
 	"github.com/creachadair/taskgroup"
 )
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"aoc/2022/08/treemap"
+	"github.com/creachadair/aoc/2022/08/treemap"
 )
 
 var (

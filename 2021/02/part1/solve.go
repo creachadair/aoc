@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"aoc/2021/02/sub"
+	"github.com/creachadair/aoc/2021/02/sub"
 )
 
 var inputFile = flag.String("input", "input.txt", "Input file")

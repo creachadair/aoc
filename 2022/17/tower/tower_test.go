@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"aoc/2022/17/tower"
+	"github.com/creachadair/aoc/2022/17/tower"
 )
 
 func TestTower(t *testing.T) {

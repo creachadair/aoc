@@ -1,4 +1,4 @@
-module aoc
+module github.com/creachadair/aoc
 
 go 1.21
 

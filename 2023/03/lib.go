@@ -25,30 +25,35 @@ func isSymbol(b byte) bool {
 	return b != '.'
 }
 
-func (s Schematic) NearSymbol(row, col int) bool {
+func (s Schematic) adjSymbol(row, col int) (r, c int) {
 	for r := -1; r <= 1; r++ {
 		for c := -1; c <= 1; c++ {
 			if r == 0 && c == 0 {
 				continue
 			}
 			if isSymbol(s.At(row+r, col+c)) {
-				return true
+				return row + r, col + c
 			}
 		}
 	}
-	return false
+	return -1, -1
+}
+
+func (s Schematic) LabelOf(row, lo, hi int) (r, c int) {
+	if row < 0 || row >= len(s) {
+		return -1, -1
+	}
+	for col := lo; col < hi; col++ {
+		if r, c := s.adjSymbol(row, col); r >= 0 && c >= 0 {
+			return r, c
+		}
+	}
+	return -1, -1
 }
 
 func (s Schematic) IsLabel(row, lo, hi int) bool {
-	if row < 0 || row >= len(s) {
-		return false
-	}
-	for col := lo; col < hi; col++ {
-		if s.NearSymbol(row, col) {
-			return true
-		}
-	}
-	return false
+	r, c := s.LabelOf(row, lo, hi)
+	return r >= 0 && c >= 0
 }
 
 func ParseSchematic(input []byte) (Schematic, error) {

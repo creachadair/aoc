@@ -30,19 +30,22 @@ func (c Card) String() string {
 	return buf.String()
 }
 
-func (c Card) Score() int {
+func (c Card) Matches() int {
 	wins := mapset.New(c.Win...)
-	cur := 0
+	var matches int
 	for _, num := range c.Num {
 		if wins.Has(num) {
-			if cur == 0 {
-				cur = 1
-			} else {
-				cur *= 2
-			}
+			matches++
 		}
 	}
-	return cur
+	return matches
+}
+
+func (c Card) Score() int {
+	if m := c.Matches(); m > 0 {
+		return 1 << (m - 1)
+	}
+	return 0
 }
 
 type Cards []Card

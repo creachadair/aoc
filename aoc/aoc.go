@@ -2,9 +2,11 @@ package aoc
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -28,4 +30,17 @@ func MustReadInput() []byte {
 // SplitLines splits input into lines.
 func SplitLines(input []byte) []string {
 	return strings.Split(strings.TrimSpace(string(input)), "\n")
+}
+
+// ParseInts parses strings as integers.
+func ParseInts(ss []string) ([]int, error) {
+	out := make([]int, len(ss))
+	for i, s := range ss {
+		v, err := strconv.Atoi(s)
+		if err != nil {
+			return nil, fmt.Errorf("value %d: %w", i+1, err)
+		}
+		out[i] = v
+	}
+	return out, nil
 }

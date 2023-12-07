@@ -7,13 +7,54 @@ import (
 	"strings"
 
 	"github.com/creachadair/aoc/aoc"
+	"golang.org/x/exp/constraints"
 )
 
-const cardName = "23456789TJQKA"
+const cardName = "_23456789TJQKA"
 
-type Hand [5]byte // in nonincreasing order
+var (
+	joker    = byte(strings.IndexByte(cardName, 'J'))
+	ace      = byte(strings.IndexByte(cardName, 'A'))
+	bestHand = Hand{ace, ace, ace, ace, ace}
+)
 
-func (h Hand) Type() HandType {
+type Hand [5]byte
+
+// Best returns the strongest hand equivalent to h with all J cards optimally
+// replaced as jokers.
+func (h Hand) Best() Hand {
+	m, _ := mapHand(h)
+	nj := m[joker]
+	if nj == 0 {
+		return h // no jokers to replace
+	} else if nj == 5 {
+		return bestHand // all jokers; make the best 5-hand
+	}
+
+	// Remove the jokers and consider the best most-frequent remaining card in
+	// the hand: Replacing the jokers with that card optimizes the result.
+	//
+	// For example:
+	//    XbcdJ    high card X becomes XXbcd one pair
+	//    XXbcJ    one pair XX becomes XXXbc three of a kind
+	//    XXbJJ    one pair XX becomes XXXXb four of a kind
+	//    XXYYJ    two pair XX YY becomes XXXYY full house
+	//    XXXyJ    three of a kind XXX becomes XXXXy four of a kind
+	//
+	// etc.
+
+	delete(m, joker)
+	mc, _ := argMax(m)
+	cp := h
+	for i, c := range cp {
+		if c == joker {
+			cp[i] = mc
+		}
+	}
+	return cp
+}
+
+func mapHand(h Hand) (map[byte]int, int) {
 	m := make(map[byte]int)
 	var max int
 	for _, c := range h {
@@ -22,6 +63,11 @@ func (h Hand) Type() HandType {
 			max = m[c]
 		}
 	}
+	return m, max
+}
+
+func (h Hand) Type() HandType {
+	m, max := mapHand(h)
 	switch len(m) {
 	case 1:
 		return 6 // five of a kind
@@ -63,11 +109,11 @@ func (t HandType) String() string {
 
 var handName = []string{"high-card", "one-pair", "two-pair", "3-of-kind", "full-house", "4-of-kind", "5-of-kind"}
 
-func argMax[T comparable](m map[T]int) (T, int) {
+func argMax[T constraints.Ordered](m map[T]int) (T, int) {
 	var max T
 	var mc int
 	for v, n := range m {
-		if n > mc {
+		if n > mc || (n == mc && v > max) {
 			max, mc = v, n
 		}
 	}
@@ -97,12 +143,33 @@ func parseHand(s string) (Hand, error) {
 	return h, nil
 }
 
+// CompareHands compares a and b treating J cards as Jacks.
 func CompareHands(a, b Hand) int {
 	ta, tb := a.Type(), b.Type()
 	if ta < tb {
 		return -1
 	} else if ta > tb {
 		return 1
+	}
+	return bytes.Compare(a[:], b[:])
+}
+
+// CompareHands compares a and be treating J cards as Jokers.
+func CompareHandsWild(a, b Hand) int {
+	ta, tb := a.Best().Type(), b.Best().Type()
+	if ta < tb {
+		return -1
+	} else if ta > tb {
+		return 1
+	}
+	// To break ties, we treat jokers as zeroes.
+	for i := 0; i < len(a); i++ {
+		if a[i] == joker {
+			a[i] = 0
+		}
+		if b[i] == joker {
+			b[i] = 0
+		}
 	}
 	return bytes.Compare(a[:], b[:])
 }

@@ -44,7 +44,7 @@ func (h Hand) Best() Hand {
 	// etc.
 
 	delete(m, joker)
-	mc, _ := argMax(m)
+	mc := argMax(m)
 	cp := h
 	for i, c := range cp {
 		if c == joker {
@@ -109,7 +109,7 @@ func (t HandType) String() string {
 
 var handName = []string{"high-card", "one-pair", "two-pair", "3-of-kind", "full-house", "4-of-kind", "5-of-kind"}
 
-func argMax[T constraints.Ordered](m map[T]int) (T, int) {
+func argMax[T constraints.Ordered](m map[T]int) T {
 	var max T
 	var mc int
 	for v, n := range m {
@@ -117,7 +117,7 @@ func argMax[T constraints.Ordered](m map[T]int) (T, int) {
 			max, mc = v, n
 		}
 	}
-	return max, mc
+	return max
 }
 
 func parseHand(s string) (Hand, error) {

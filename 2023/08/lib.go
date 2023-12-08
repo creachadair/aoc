@@ -52,37 +52,51 @@ func dprintf(msg string, args ...any) {
 	}
 }
 
-func (p *Pgm) Steps(from, to string) (int, string) {
-	var cur *Insn
-	for _, c := range p.Insn {
-		if strings.HasSuffix(c.Label, from) {
-			cur = p.next[c.Label]
-			break
-		}
+type Iter struct {
+	pgm *Pgm
+	cur *Insn
+	ns  int
+	pos int
+}
+
+func (it *Iter) Insn() Insn           { return *it.cur }
+func (it *Iter) State() (int, string) { return it.ns, it.cur.Label }
+
+func (it *Iter) Next() (int, string) {
+	var next string
+	dir := it.pgm.Scheme[it.pos]
+	switch dir {
+	case 'L':
+		next = it.cur.L
+	case 'R':
+		next = it.cur.R
+	default:
+		panic("invalid step: " + string(dir))
 	}
+	dprintf("step %d: from %q go %c to %q", it.ns, it.cur.Label, dir, next)
+	it.cur = it.pgm.next[next]
+	if it.cur == nil {
+		panic("node not found: " + next)
+	}
+	it.ns++
+	it.pos = (it.pos + 1) % len(it.pgm.Scheme)
+	return it.ns, next
+}
+
+func (p *Pgm) Iter(from string) *Iter {
+	cur := p.next[from]
 	if cur == nil {
-		panic("origin not found: " + from)
+		panic("missing label: " + from)
 	}
-	pos, ns := 0, 0
-	for !strings.HasSuffix(cur.Label, to) {
-		var next string
-		switch p.Scheme[pos] {
-		case 'L':
-			next = cur.L
-		case 'R':
-			next = cur.R
-		default:
-			panic("invalid step: " + string(p.Scheme[pos]))
-		}
-		dprintf("At %q go %c to %q", cur.Label, p.Scheme[pos], next)
-		cur = p.next[next]
-		if cur == nil {
-			panic("step not found: " + next)
-		}
-		ns++
-		pos = (pos + 1) % len(p.Scheme)
+	return &Iter{pgm: p, cur: cur}
+}
+
+func (p *Pgm) Steps(from, to string) *Iter {
+	it := p.Iter(from)
+	for !strings.HasSuffix(it.Insn().Label, to) {
+		it.Next()
 	}
-	return ns, cur.Label
+	return it
 }
 
 func ParseProgram(input []byte) (*Pgm, error) {

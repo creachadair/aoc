@@ -16,5 +16,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parse program: %v", err)
 	}
-	fmt.Println(pgm.Steps("AAA", "ZZZ"))
+	fmt.Println(pgm.Steps("AAA", "ZZZ").State())
 }

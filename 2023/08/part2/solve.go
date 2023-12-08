@@ -21,7 +21,7 @@ func main() {
 	var nsteps []int
 	for _, c := range pgm.Insn {
 		if strings.HasSuffix(c.Label, "A") {
-			ns, goal := pgm.Steps(c.Label, "Z")
+			ns, goal := pgm.Steps(c.Label, "Z").State()
 			nsteps = append(nsteps, ns)
 			log.Printf("Starting at %q, %d steps to goal %q", c.Label, ns, goal)
 		}

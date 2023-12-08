@@ -2,12 +2,16 @@ package lib
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/creachadair/aoc/aoc"
 )
+
+var doDebug = flag.Bool("debug", false, "Enable debug logging")
 
 type Insn struct {
 	Label string
@@ -35,13 +39,25 @@ type Pgm struct {
 	next map[string]*Insn
 }
 
-func (p *Pgm) Steps(from, to string) int {
-	cur := p.next[from]
+func dprintf(msg string, args ...any) {
+	if *doDebug {
+		log.Printf(msg, args...)
+	}
+}
+
+func (p *Pgm) Steps(from, to string) (int, string) {
+	var cur *Insn
+	for _, c := range p.Insn {
+		if strings.HasSuffix(c.Label, from) {
+			cur = p.next[c.Label]
+			break
+		}
+	}
 	if cur == nil {
 		panic("origin not found: " + from)
 	}
 	pos, ns := 0, 0
-	for cur.Label != to {
+	for !strings.HasSuffix(cur.Label, to) {
 		var next string
 		switch p.Scheme[pos] {
 		case 'L':
@@ -51,7 +67,7 @@ func (p *Pgm) Steps(from, to string) int {
 		default:
 			panic("invalid step: " + string(p.Scheme[pos]))
 		}
-		log.Printf("At %q go %c to %q", cur.Label, p.Scheme[pos], next)
+		dprintf("At %q go %c to %q", cur.Label, p.Scheme[pos], next)
 		cur = p.next[next]
 		if cur == nil {
 			panic("step not found: " + next)
@@ -59,7 +75,7 @@ func (p *Pgm) Steps(from, to string) int {
 		ns++
 		pos = (pos + 1) % len(p.Scheme)
 	}
-	return ns
+	return ns, cur.Label
 }
 
 func ParseProgram(input []byte) (*Pgm, error) {

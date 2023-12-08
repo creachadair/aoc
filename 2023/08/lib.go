@@ -108,7 +108,7 @@ func ParseProgram(input []byte) (*Pgm, error) {
 	for i, line := range lines[2:] {
 		p, err := parseInsn(line)
 		if err != nil {
-			return nil, fmt.Errorf("line %d: %w", i+3)
+			return nil, fmt.Errorf("line %d: %w", i+3, err)
 		}
 		insn = append(insn, p)
 	}

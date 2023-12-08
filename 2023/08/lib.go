@@ -39,6 +39,13 @@ type Pgm struct {
 	next map[string]*Insn
 }
 
+func (p *Pgm) Find(label string) Insn {
+	if c := p.next[label]; c != nil {
+		return *c
+	}
+	panic("missing label: " + label)
+}
+
 func dprintf(msg string, args ...any) {
 	if *doDebug {
 		log.Printf(msg, args...)

@@ -21,9 +21,21 @@ func main() {
 	var nsteps []int
 	for _, c := range pgm.Insn {
 		if strings.HasSuffix(c.Label, "A") {
-			ns, goal := pgm.Steps(c.Label, "Z").State()
+			it := pgm.Steps(c.Label, "Z")
+
+			ns, goal := it.State()
 			nsteps = append(nsteps, ns)
 			log.Printf("Starting at %q, %d steps to goal %q", c.Label, ns, goal)
+
+			// Verify that there is no leader that we have to account for.
+			// By construction, there shouldn't be.
+			for {
+				zs, goal := it.Next()
+				if strings.HasSuffix(goal, "Z") {
+					log.Printf(" -- then %d more steps to %q", zs-ns, goal)
+					break
+				}
+			}
 		}
 	}
 	fmt.Println(nsteps)

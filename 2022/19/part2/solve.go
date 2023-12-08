@@ -67,7 +67,7 @@ func estimate(s robot.State) int {
 	// the current plan. Add 1 so the estimate is always nonzero.
 	r1, r2 := s.Plan.RockBotOre, s.Plan.RockBotGlass
 	if r1 > r2 {
-		r2, r1 = r1, r2
+		r1 = r2
 	}
 	nb := (timeLeft+(r1-1))/r1 + s.RockBots + 1
 	return -(s.Rock + timeLeft*nb)

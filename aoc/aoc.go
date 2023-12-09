@@ -58,8 +58,7 @@ func ParseInts(ss []string) ([]int, error) {
 //	[]int    -- multiple whitespace-separated decimal integers
 //	string   -- a single string
 //	[]string -- a slice of whitespace-separated strings
-//	[]byte   -- a slice of bytes (like string)
-//	encoding.TextMarshaler
+//	encoding.TextUnmarshaler
 //
 // Each match is decoded into the target argument, or an error is reported.
 func Scanx(re *regexp.Regexp, input string, args ...any) error {
@@ -81,8 +80,6 @@ func Scanx(re *regexp.Regexp, input string, args ...any) error {
 			*arg = sub
 		case *[]string:
 			*arg = strings.Fields(sub)
-		case *[]byte:
-			*arg = []byte(sub)
 		case encoding.TextUnmarshaler:
 			err = arg.UnmarshalText([]byte(sub))
 		default:

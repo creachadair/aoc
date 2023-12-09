@@ -21,15 +21,11 @@ type Insn struct {
 var insnRE = regexp.MustCompile(`^(\w+) = \((\w+), (\w+)\)$`)
 
 func parseInsn(line string) (Insn, error) {
-	m := insnRE.FindStringSubmatch(line)
-	if m == nil {
-		return Insn{}, errors.New("invalid instruction")
+	var out Insn
+	if err := aoc.Scanx(insnRE, line, &out.Label, &out.L, &out.R); err != nil {
+		return out, fmt.Errorf("invalid instruction: %w", err)
 	}
-	return Insn{
-		Label: m[1],
-		L:     m[2],
-		R:     m[3],
-	}, nil
+	return out, nil
 }
 
 type Pgm struct {

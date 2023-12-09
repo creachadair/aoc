@@ -2,7 +2,6 @@ package aoc
 
 import (
 	"encoding"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -69,7 +68,7 @@ func Scanx(re *regexp.Regexp, input string, args ...any) error {
 	}
 	m := re.FindStringSubmatch(input)
 	if m == nil {
-		return errors.New("no match")
+		return fmt.Errorf("input does not match %q", re)
 	}
 	for i, sub := range m[1:] {
 		var err error

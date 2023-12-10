@@ -73,13 +73,15 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 	// cross the boundary an odd number of times.
 	//
 	// However, "crossing" is slightly subtle: Say we are currently outside the
-	// figure, traverse a section of pipe, say:
+	// figure, and traverse a section of pipe in the direction of travel:
 	//
 	//     .F---7. >> direction of travel
+	//          | (or L, or J)
 	//
-	// then this should not count as a "crossing" because we did not enter the
-	// interior of the figure. However:
+	// This should not count as a "crossing" because we did not enter the
+	// interior of the figure, we only "skated" around it. However:
 	//
+	//          | (or F, or 7)
 	//     .F---J. >> direction of travel
 	//
 	// should count as a "crossing" because we exited into the interior as we

@@ -16,5 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parse grid: %v", err)
 	}
-	fmt.Println(g.FindLoop(g.Start()))
+	loop := g.FindLoop(g.Start())
+	fmt.Println(loop.Start, loop.Max)
 }

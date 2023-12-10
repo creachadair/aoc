@@ -24,6 +24,8 @@ func (g *Grid) At(r, c int) byte {
 	return g.data[r*g.nc+c]
 }
 
+func (g Grid) Mark(r, c int) { g.data[r*g.nc+c] = '*' }
+
 func (g *Grid) Start() (r, c int) {
 	for r = 0; r < g.nr; r++ {
 		for c = 0; c < g.nc; c++ {
@@ -185,8 +187,9 @@ func (g *Grid) CleanString(loop Loop) string {
 	var buf strings.Builder
 	for r := 0; r < g.nr; r++ {
 		for c := 0; c < g.nc; c++ {
-			if loop.Path.Has(Cell{r, c}) {
-				buf.WriteByte(g.At(r, c))
+			cur := g.At(r, c)
+			if loop.Path.Has(Cell{r, c}) || cur == '*' {
+				buf.WriteByte(cur)
 			} else {
 				buf.WriteByte('.')
 			}

@@ -18,14 +18,14 @@ func main() {
 	}
 	var numIn int
 	loop := g.FindLoop(g.Start())
-	fmt.Println(g.CleanString(loop))
 	for r := 0; r < g.Rows(); r++ {
 		for c := 0; c < g.Cols(); c++ {
 			if g.IsInside(loop, r, c) {
 				numIn++
-				log.Printf("(%d,%d)", r, c)
+				g.Mark(r, c)
 			}
 		}
 	}
+	fmt.Println(g.CleanString(loop))
 	fmt.Println(numIn)
 }

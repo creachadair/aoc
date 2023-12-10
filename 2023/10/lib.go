@@ -26,11 +26,15 @@ func (g *Grid) At(r, c int) byte {
 // Since the puzzle input is ASCII, use the high-order bit of each byte as a
 // marker for which cells belong to the path.
 
-func (g *Grid) setPath(r, c int)     { g.data[r*g.nc+c] |= 0x80 }
-func (g *Grid) isPath(r, c int) bool { return g.data[r*g.nc+c]&0x80 != 0 }
+func (g *Grid) setPath(r, c int) { g.data[r*g.nc+c] |= 0x80 }
 
+// IsPath reports whether r, c is on the selected path.
+func (g *Grid) IsPath(r, c int) bool { return g.data[r*g.nc+c]&0x80 != 0 }
+
+// Mark labels cell r, c with a cosmetic marker for display.
 func (g Grid) Mark(r, c int) { g.data[r*g.nc+c] = '*' }
 
+// Start locates the position of the "S" marker.
 func (g *Grid) Start() (r, c int) {
 	for r = 0; r < g.nr; r++ {
 		for c = 0; c < g.nc; c++ {
@@ -42,10 +46,11 @@ func (g *Grid) Start() (r, c int) {
 	return -1, -1
 }
 
+// Loop gives the location and size of a path loop.
 type Loop struct {
-	Start      Cell
-	Max        int
-	StartShape byte
+	Start      Cell // the location of the "S" marker
+	Max        int  // the maximum number of steps from S the path reaches
+	StartShape byte // the path shape under "S"
 }
 
 func (g *Grid) FindLoop(r, c int) Loop {
@@ -89,7 +94,7 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 	//
 	// should count as a "crossing" because we exited into the interior as we
 	// departed from J. So F-J and L-7 transitions cross, F-7 and L-J do not.
-	if g.isPath(r, c) {
+	if g.IsPath(r, c) {
 		return false // path elements are not contained by the path
 	}
 
@@ -97,7 +102,7 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 	var pathStart byte
 	for h := c; h < g.nc; h++ {
 		cur := byte('.')
-		if g.isPath(r, h) {
+		if g.IsPath(r, h) {
 			cur = g.At(r, h)
 
 			// To simplify the logic below, treat "S" as whatever shape we
@@ -172,32 +177,32 @@ func (g *Grid) exit(cell Cell) Cell {
 	r, c := cell[0], cell[1]
 	switch g.At(r, c) {
 	case '-':
-		if g.isPath(r, c-1) {
+		if g.IsPath(r, c-1) {
 			return Cell{r, c + 1}
 		}
 		return Cell{r, c - 1}
 	case '|':
-		if g.isPath(r-1, c) {
+		if g.IsPath(r-1, c) {
 			return Cell{r + 1, c}
 		}
 		return Cell{r - 1, c}
 	case 'F':
-		if g.isPath(r, c+1) {
+		if g.IsPath(r, c+1) {
 			return Cell{r + 1, c}
 		}
 		return Cell{r, c + 1}
 	case 'L':
-		if g.isPath(r-1, c) {
+		if g.IsPath(r-1, c) {
 			return Cell{r, c + 1}
 		}
 		return Cell{r - 1, c}
 	case '7':
-		if g.isPath(r, c-1) {
+		if g.IsPath(r, c-1) {
 			return Cell{r + 1, c}
 		}
 		return Cell{r, c - 1}
 	case 'J':
-		if g.isPath(r-1, c) {
+		if g.IsPath(r-1, c) {
 			return Cell{r, c - 1}
 		}
 		return Cell{r - 1, c}
@@ -211,7 +216,7 @@ func (g *Grid) CleanString() string {
 	for r := 0; r < g.nr; r++ {
 		for c := 0; c < g.nc; c++ {
 			cur := g.At(r, c)
-			if g.isPath(r, c) || cur == '*' {
+			if g.IsPath(r, c) || cur == '*' {
 				buf.WriteByte(cur)
 			} else {
 				buf.WriteByte('.')

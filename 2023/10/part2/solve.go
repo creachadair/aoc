@@ -26,6 +26,6 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(g.CleanString(loop))
+	fmt.Println(g.CleanString())
 	fmt.Println(numIn)
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/creachadair/aoc/aoc"
-	"github.com/creachadair/mds/mapset"
 )
 
 type Grid struct {
@@ -21,8 +20,11 @@ func (g *Grid) At(r, c int) byte {
 	if r < 0 || r >= g.nr || c < 0 || c >= g.nc {
 		return '.'
 	}
-	return g.data[r*g.nc+c]
+	return g.data[r*g.nc+c] &^ 0x80
 }
+
+func (g *Grid) setPath(r, c int)     { g.data[r*g.nc+c] |= 0x80 }
+func (g *Grid) isPath(r, c int) bool { return g.data[r*g.nc+c]&0x80 != 0 }
 
 func (g Grid) Mark(r, c int) { g.data[r*g.nc+c] = '*' }
 
@@ -41,33 +43,37 @@ type Loop struct {
 	Start      Cell
 	Max        int
 	StartShape byte
-	Path       mapset.Set[Cell]
 }
 
 func (g *Grid) FindLoop(r, c int) Loop {
+	for i := range g.data {
+		g.data[i] &^= 0x80 // clear existing path marks
+	}
 	a, b, startShape := g.seeds(r, c)
-	seen := mapset.New[Cell]()
-	seen.Add(Cell{r, c}, a, b)
+	g.setPath(r, c)
+	g.setPath(a[0], a[1])
+	g.setPath(b[0], b[1])
 
 	dist := 1
 	for a != b {
 		dist++
 
 		for _, x := range g.exits(a) {
-			if !seen.Has(x) {
+			if !g.isPath(x[0], x[1]) {
 				a = x
 			}
 		}
 		for _, x := range g.exits(b) {
-			if !seen.Has(x) {
+			if !g.isPath(x[0], x[1]) {
 				b = x
 			}
 		}
 		// N.B. Update the occurs check AFTER finding the next target for both
 		// legs, otherwise one will block the other from reaching their meet.
-		seen.Add(a, b)
+		g.setPath(a[0], a[1])
+		g.setPath(b[0], b[1])
 	}
-	return Loop{Start: Cell{r, c}, Max: dist, StartShape: startShape, Path: seen}
+	return Loop{Start: Cell{r, c}, Max: dist, StartShape: startShape}
 }
 
 func (g *Grid) IsInside(loop Loop, r, c int) bool {
@@ -88,7 +94,7 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 	//
 	// should count as a "crossing" because we exited into the interior as we
 	// departed from J. So F-J and L-7 transitions cross, F-7 and L-J do not.
-	if loop.Path.Has(Cell{r, c}) {
+	if g.isPath(r, c) {
 		return false // path elements are not contained by the path
 	}
 
@@ -96,7 +102,7 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 	var pathStart byte
 	for h := c; h < g.nc; h++ {
 		cur := byte('.')
-		if loop.Path.Has(Cell{r, h}) {
+		if g.isPath(r, h) {
 			cur = g.At(r, h)
 
 			// To simplify the logic below, treat "S" as whatever shape we
@@ -187,12 +193,12 @@ func (g *Grid) exits(cell Cell) []Cell {
 	}
 }
 
-func (g *Grid) CleanString(loop Loop) string {
+func (g *Grid) CleanString() string {
 	var buf strings.Builder
 	for r := 0; r < g.nr; r++ {
 		for c := 0; c < g.nc; c++ {
 			cur := g.At(r, c)
-			if loop.Path.Has(Cell{r, c}) || cur == '*' {
+			if g.isPath(r, c) || cur == '*' {
 				buf.WriteByte(cur)
 			} else {
 				buf.WriteByte('.')

@@ -17,6 +17,6 @@ func main() {
 		log.Fatalf("Parse grid: %v", err)
 	}
 	loop := g.FindLoop(g.Start())
-	fmt.Println(g.CleanString(loop))
+	fmt.Println(g.CleanString())
 	fmt.Printf("%v max=%d start=%c\n", loop.Start, loop.Max, loop.StartShape)
 }

@@ -63,6 +63,8 @@ func (g *Grid) FindLoop(r, c int) Loop {
 				b = x
 			}
 		}
+		// N.B. Update the occurs check AFTER finding the next target for both
+		// legs, otherwise one will block the other from reaching their meet.
 		seen.Add(a, b)
 	}
 	return Loop{Start: Cell{r, c}, Max: dist, StartShape: startShape, Path: seen}

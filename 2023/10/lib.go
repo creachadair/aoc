@@ -20,8 +20,11 @@ func (g *Grid) At(r, c int) byte {
 	if r < 0 || r >= g.nr || c < 0 || c >= g.nc {
 		return '.'
 	}
-	return g.data[r*g.nc+c] &^ 0x80
+	return g.data[r*g.nc+c] &^ 0x80 // filter markers off
 }
+
+// Since the puzzle input is ASCII, use the high-order bit of each byte as a
+// marker for which cells belong to the path.
 
 func (g *Grid) setPath(r, c int)     { g.data[r*g.nc+c] |= 0x80 }
 func (g *Grid) isPath(r, c int) bool { return g.data[r*g.nc+c]&0x80 != 0 }
@@ -58,16 +61,8 @@ func (g *Grid) FindLoop(r, c int) Loop {
 	for a != b {
 		dist++
 
-		for _, x := range g.exits(a) {
-			if !g.isPath(x[0], x[1]) {
-				a = x
-			}
-		}
-		for _, x := range g.exits(b) {
-			if !g.isPath(x[0], x[1]) {
-				b = x
-			}
-		}
+		a, b = g.exit(a), g.exit(b)
+
 		// N.B. Update the occurs check AFTER finding the next target for both
 		// legs, otherwise one will block the other from reaching their meet.
 		g.setPath(a[0], a[1])
@@ -173,23 +168,41 @@ func (g *Grid) seeds(r, c int) (a, b Cell, start byte) {
 	return out[0], out[1], startShape[dir]
 }
 
-func (g *Grid) exits(cell Cell) []Cell {
+func (g *Grid) exit(cell Cell) Cell {
 	r, c := cell[0], cell[1]
 	switch g.At(r, c) {
 	case '-':
-		return []Cell{{r, c - 1}, {r, c + 1}}
+		if g.isPath(r, c-1) {
+			return Cell{r, c + 1}
+		}
+		return Cell{r, c - 1}
 	case '|':
-		return []Cell{{r - 1, c}, {r + 1, c}}
+		if g.isPath(r-1, c) {
+			return Cell{r + 1, c}
+		}
+		return Cell{r - 1, c}
 	case 'F':
-		return []Cell{{r, c + 1}, {r + 1, c}}
+		if g.isPath(r, c+1) {
+			return Cell{r + 1, c}
+		}
+		return Cell{r, c + 1}
 	case 'L':
-		return []Cell{{r - 1, c}, {r, c + 1}}
+		if g.isPath(r-1, c) {
+			return Cell{r, c + 1}
+		}
+		return Cell{r - 1, c}
 	case '7':
-		return []Cell{{r, c - 1}, {r + 1, c}}
+		if g.isPath(r, c-1) {
+			return Cell{r + 1, c}
+		}
+		return Cell{r, c - 1}
 	case 'J':
-		return []Cell{{r - 1, c}, {r, c - 1}}
+		if g.isPath(r-1, c) {
+			return Cell{r, c - 1}
+		}
+		return Cell{r - 1, c}
 	default:
-		return nil
+		panic(fmt.Sprintf("no exit from %d,%d", r, c))
 	}
 }
 

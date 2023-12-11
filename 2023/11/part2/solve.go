@@ -9,6 +9,8 @@ import (
 	"github.com/creachadair/aoc/aoc"
 )
 
+// To solve part1, set --expand=2
+// For the example, try --expand=10 and --expand=100
 var expandAmt = flag.Int("expand", 1000000, "Expansion factor")
 
 func main() {

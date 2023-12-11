@@ -19,25 +19,7 @@ func (m *Map) Cols() int        { return m.nc }
 func (m *Map) At(r, c int) byte { return m.data[r*m.nc+c] }
 
 func (m *Map) Expand() *Map {
-	var erows, ecols []int
-nextRow:
-	for r := 0; r < m.nr; r++ {
-		for c := 0; c < m.nc; c++ {
-			if m.At(r, c) != '.' {
-				continue nextRow
-			}
-		}
-		erows = append(erows, r)
-	}
-nextCol:
-	for c := 0; c < m.nc; c++ {
-		for r := 0; r < m.nr; r++ {
-			if m.At(r, c) != '.' {
-				continue nextCol
-			}
-		}
-		ecols = append(ecols, c)
-	}
+	erows, ecols := m.EmptySpace()
 	if len(erows) == 0 && len(ecols) == 0 {
 		return m
 	}
@@ -56,6 +38,28 @@ nextCol:
 		}
 	}
 	return &Map{nr: m.nr + len(erows), nc: m.nc + len(ecols), data: buf}
+}
+
+func (m *Map) EmptySpace() (erows, ecols []int) {
+nextRow:
+	for r := 0; r < m.nr; r++ {
+		for c := 0; c < m.nc; c++ {
+			if m.At(r, c) != '.' {
+				continue nextRow
+			}
+		}
+		erows = append(erows, r)
+	}
+nextCol:
+	for c := 0; c < m.nc; c++ {
+		for r := 0; r < m.nr; r++ {
+			if m.At(r, c) != '.' {
+				continue nextCol
+			}
+		}
+		ecols = append(ecols, c)
+	}
+	return
 }
 
 func (m *Map) String() string {

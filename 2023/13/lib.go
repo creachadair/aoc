@@ -34,6 +34,15 @@ func min(a, b int) int {
 	return b
 }
 
+func Mirror(m *Map) (byte, int) {
+	if v := m.FindMirror(); v >= 0 {
+		return 'V', v
+	}
+	return 'H', m.Transpose().FindMirror()
+}
+
+// FindMirror reports the first column of m that has a mirror split, or -1 if
+// there is no such column.
 func (m *Map) FindMirror() int {
 	for c := 0; c < m.nc; c++ {
 		if m.IsMirror(c) {

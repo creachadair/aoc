@@ -18,14 +18,15 @@ func main() {
 	}
 	var sum int
 	for i, m := range ms {
-		log.Printf("Map %d", i+1)
-		if v := m.FindMirror(); v >= 0 {
-			sum += v
-			log.Printf("- V split col %d", v)
-		}
-		if v := m.Transpose().FindMirror(); v >= 0 {
-			sum += 100 * v
-			log.Printf("- H split at row %d", v)
+		kind, pos := lib.Mirror(m)
+		log.Printf("Map %d has %c split at %d", i+1, kind, pos)
+		switch kind {
+		case 'V':
+			sum += pos
+		case 'H':
+			sum += 100 * pos
+		default:
+			panic("invalid mirror kind")
 		}
 	}
 	fmt.Println(sum)

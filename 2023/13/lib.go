@@ -34,6 +34,15 @@ func min(a, b int) int {
 	return b
 }
 
+func (m *Map) FindMirror() int {
+	for c := 0; c < m.nc; c++ {
+		if m.IsMirror(c) {
+			return c
+		}
+	}
+	return -1
+}
+
 func (m *Map) IsMirror(c int) bool {
 	w := min(c, m.nc-c)
 	if w == 0 {

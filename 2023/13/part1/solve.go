@@ -19,18 +19,13 @@ func main() {
 	var sum int
 	for i, m := range ms {
 		log.Printf("Map %d", i+1)
-		for c := 0; c < m.Cols(); c++ {
-			if m.IsMirror(c) {
-				sum += c
-				log.Printf("- V split col %d", c)
-			}
+		if v := m.FindMirror(); v >= 0 {
+			sum += v
+			log.Printf("- V split col %d", v)
 		}
-		mt := m.Transpose()
-		for c := 0; c < mt.Cols(); c++ {
-			if mt.IsMirror(c) {
-				sum += 100 * c
-				log.Printf("- H split at row %d", c)
-			}
+		if v := m.Transpose().FindMirror(); v >= 0 {
+			sum += 100 * v
+			log.Printf("- H split at row %d", v)
 		}
 	}
 	fmt.Println(sum)

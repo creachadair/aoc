@@ -12,7 +12,7 @@ import (
 func main() {
 	flag.Parse()
 
-	ms, err := lib.ParseMaps(aoc.MustReadInput())
+	ms, err := aoc.ParseMaps(aoc.MustReadInput())
 	if err != nil {
 		log.Fatalf("Parse maps: %v", err)
 	}
@@ -33,7 +33,7 @@ func main() {
 	fmt.Println(sum)
 }
 
-func findSmudge(m *lib.Map) (r, c int, kind byte, pos int) {
+func findSmudge(m *aoc.Map) (r, c int, kind byte, pos int) {
 	// Find the initial split.
 	lib.Mirrors(m, func(k byte, p int) { kind, pos = k, p })
 
@@ -41,7 +41,7 @@ func findSmudge(m *lib.Map) (r, c int, kind byte, pos int) {
 	for r = 0; r < m.Rows(); r++ {
 		for c = 0; c < m.Cols(); c++ {
 			found := false
-			m.Toggle(r, c)
+			lib.Toggle(m, r, c)
 			lib.Mirrors(m, func(k byte, p int) {
 				if k != ok || p != op {
 					kind, pos = k, p
@@ -51,7 +51,7 @@ func findSmudge(m *lib.Map) (r, c int, kind byte, pos int) {
 			if found {
 				return
 			}
-			m.Toggle(r, c) // put it back
+			lib.Toggle(m, r, c) // put it back
 		}
 	}
 	return -1, -1, 0, 0

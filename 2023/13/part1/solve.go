@@ -12,7 +12,7 @@ import (
 func main() {
 	flag.Parse()
 
-	ms, err := lib.ParseMaps(aoc.MustReadInput())
+	ms, err := aoc.ParseMaps(aoc.MustReadInput())
 	if err != nil {
 		log.Fatalf("Parse maps: %v", err)
 	}

@@ -9,6 +9,14 @@ import (
 	"github.com/creachadair/mds/slice"
 )
 
+// NewMap constructs a new map from the specified data.
+func NewMap(nr, nc int, data []byte) *Map {
+	if len(data) != nr*nc {
+		panic(fmt.Sprintf("invalid map size: got %d, want %d", len(data), nr*nc))
+	}
+	return &Map{nr: nr, nc: nc, data: data}
+}
+
 // A Map represents a rectangular grid of one-byte glyphs.
 // Each row is encoded on one line.
 // This is a very common format for AoC puzzle inputs.

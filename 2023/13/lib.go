@@ -27,6 +27,14 @@ func (m *Map) Transpose() *Map {
 	return out
 }
 
+func (m *Map) Toggle(r, c int) {
+	if m.At(r, c) == '.' {
+		m.data[r*m.nc+c] = '#'
+	} else {
+		m.data[r*m.nc+c] = '.'
+	}
+}
+
 func min(a, b int) int {
 	if a <= b {
 		return a
@@ -34,22 +42,22 @@ func min(a, b int) int {
 	return b
 }
 
-func Mirror(m *Map) (byte, int) {
-	if v := m.FindMirror(); v >= 0 {
-		return 'V', v
-	}
-	return 'H', m.Transpose().FindMirror()
+func Mirrors(m *Map, f func(byte, int)) {
+	m.FindMirror(func(c int) {
+		f('V', c)
+	})
+	m.Transpose().FindMirror(func(r int) {
+		f('H', r)
+	})
 }
 
-// FindMirror reports the first column of m that has a mirror split, or -1 if
-// there is no such column.
-func (m *Map) FindMirror() int {
+// FindMirror reports the columns of m that have a mirror split.
+func (m *Map) FindMirror(f func(int)) {
 	for c := 0; c < m.nc; c++ {
 		if m.IsMirror(c) {
-			return c
+			f(c)
 		}
 	}
-	return -1
 }
 
 func (m *Map) IsMirror(c int) bool {

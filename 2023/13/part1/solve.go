@@ -18,16 +18,17 @@ func main() {
 	}
 	var sum int
 	for i, m := range ms {
-		kind, pos := lib.Mirror(m)
-		log.Printf("Map %d has %c split at %d", i+1, kind, pos)
-		switch kind {
-		case 'V':
-			sum += pos
-		case 'H':
-			sum += 100 * pos
-		default:
-			panic("invalid mirror kind")
-		}
+		lib.Mirrors(m, func(kind byte, pos int) {
+			log.Printf("Map %d has %c split at %d", i+1, kind, pos)
+			switch kind {
+			case 'V':
+				sum += pos
+			case 'H':
+				sum += 100 * pos
+			default:
+				panic("invalid mirror kind")
+			}
+		})
 	}
 	fmt.Println(sum)
 }

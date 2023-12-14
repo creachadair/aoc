@@ -43,15 +43,47 @@ func (m *Map) Equal(o *Map) bool {
 // Transpose transposes the rows and columns of m in-place around its primary
 // diagonal. It returns m to permit chaining.
 func (m *Map) Transpose() *Map {
-	// We could do this in-place by blocks, but it's simpler to write the copy.
-	data := make([]byte, len(m.data))
-	for r := 0; r < m.nr; r++ {
-		for c := 0; c < m.nc; c++ {
-			data[c*m.nr+r] = m.At(r, c)
+	// In-place transposition:
+	//
+	// The item at position i moves to min(R, C)*i % (RC-1).
+	// This results in max(R, C) permutation cycles to chase.
+	// The elements at i=0 and i=(RC-1) do not move.
+	rcm := len(m.data) - 1 // == (nr * nc) - 1
+	min := min(m.nr, m.nc)
+
+	// We need to keep track of which positions are already permuted, so that we
+	// can find the next cycle anchor. Keep one bit per byte of data.
+	bs := make([]uint64, (rcm+1+63)/64) // round up
+	isSet := func(i int) bool { return bs[i/64]&(1<<(i%64)) != 0 }
+	set := func(i int) { bs[i/64] |= 1 << (i % 64) }
+	next := func(i int) int { return (min * i) % rcm }
+
+	// Skip 0 and (rc-1) since those items never move.
+	for i := 1; i < rcm; i++ {
+		if isSet(i) {
+			continue // this position was part of an earlier cycle
 		}
+
+		// Lift the item at the start of the cycle and rotate it through the
+		// positions of the permutation. When we get back to here, drop the last
+		// item we picked up back into place at the start.
+		cur := m.data[i]
+		for j := next(i); j != i; j = next(j) {
+			m.data[j], cur = cur, m.data[j]
+			set(j)
+		}
+		m.data[i] = cur
+		set(i)
 	}
-	m.nr, m.nc, m.data = m.nc, m.nr, data
+	m.nr, m.nc = m.nc, m.nr
 	return m
+}
+
+func min(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
 }
 
 // FlipH flips m horizontally in-place. It returns m to permit chaining.

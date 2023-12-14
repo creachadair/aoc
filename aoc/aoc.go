@@ -36,6 +36,9 @@ func SplitLines(input []byte) []string {
 	return strings.Split(strings.TrimSpace(string(input)), "\n")
 }
 
+// MustReadLines is shorthand for SplitLines(MustReadInput()).
+func MustReadLines() []string { return SplitLines(MustReadInput()) }
+
 // ParseInts parses strings as integers.
 func ParseInts(ss []string) ([]int, error) {
 	out := make([]int, len(ss))

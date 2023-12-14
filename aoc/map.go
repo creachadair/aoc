@@ -29,6 +29,7 @@ func (m *Map) Rows() int            { return m.nr }
 func (m *Map) Cols() int            { return m.nc }
 func (m *Map) At(r, c int) byte     { return m.data[r*m.nc+c] }
 func (m *Map) Set(r, c int, b byte) { m.data[r*m.nc+c] = b }
+func (m *Map) Data() string         { return string(m.data) }
 
 // Clone returns a copy of m with the same content.
 func (m *Map) Clone() *Map {

@@ -1,9 +1,12 @@
 package aoc
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/creachadair/mds/slice"
 )
 
 // A Map represents a rectangular grid of one-byte glyphs.
@@ -19,17 +22,45 @@ func (m *Map) Cols() int            { return m.nc }
 func (m *Map) At(r, c int) byte     { return m.data[r*m.nc+c] }
 func (m *Map) Set(r, c int, b byte) { m.data[r*m.nc+c] = b }
 
-// Transpose returns a copy of m in which the rows and columns of m are
-// exchanged (transposed) around the primary diagonal.
+// Clone returns a copy of m with the same content.
+func (m *Map) Clone() *Map {
+	return &Map{nr: m.nr, nc: m.nc, data: bytes.Clone(m.data)}
+}
+
+// Equal reports whether the two maps are equal.
+func (m *Map) Equal(o *Map) bool {
+	return m.nr == o.nr && m.nc == o.nc && bytes.Equal(m.data, o.data)
+}
+
+// Transpose transposes the rows and columns of m in-place around its primary
+// diagonal. It returns m to permit chaining.
 func (m *Map) Transpose() *Map {
-	out := &Map{nr: m.nc, nc: m.nr, data: make([]byte, len(m.data))}
+	// We could do this in-place by blocks, but it's simpler to write the copy.
+	data := make([]byte, len(m.data))
 	for r := 0; r < m.nr; r++ {
 		for c := 0; c < m.nc; c++ {
-			out.data[c*out.nc+r] = m.At(r, c)
+			data[c*m.nr+r] = m.At(r, c)
 		}
 	}
-	return out
+	m.nr, m.nc, m.data = m.nc, m.nr, data
+	return m
 }
+
+// FlipH flips m horizontally in-place. It returns m to permit chaining.
+func (m *Map) FlipH() *Map {
+	for r := 0; r < m.nr; r++ {
+		base := r * m.nc
+		slice.Reverse(m.data[base : base+m.nc])
+	}
+	return m
+}
+
+// FlipV flips m vertically in-place. It returns m to permit chaining.
+func (m *Map) FlipV() *Map { return m.Transpose().FlipH().Transpose() }
+
+// Rotate rotates m one quarter turn clockwise in-place.  It returns m to
+// permit chaining.
+func (m *Map) Rotate() *Map { return m.Transpose().FlipH() }
 
 func (m *Map) String() string {
 	var buf strings.Builder

@@ -12,12 +12,12 @@ import (
 func main() {
 	flag.Parse()
 
-	m, err := lib.ParseMap(aoc.MustReadInput())
+	m, err := aoc.ParseMap(aoc.SplitLines(aoc.MustReadInput()))
 	if err != nil {
 		log.Fatalf("Parse map: %v", err)
 	}
 	fmt.Printf("input\n%s\n", m)
-	exp := m.Expand()
+	exp := lib.Expand(m)
 	fmt.Printf("expand\n%s\n", exp)
 
 	type gxy struct {

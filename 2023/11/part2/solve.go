@@ -16,7 +16,7 @@ var expandAmt = flag.Int("expand", 1000000, "Expansion factor")
 func main() {
 	flag.Parse()
 
-	m, err := lib.ParseMap(aoc.MustReadInput())
+	m, err := aoc.ParseMap(aoc.SplitLines(aoc.MustReadInput()))
 	if err != nil {
 		log.Fatalf("Parse map: %v", err)
 	}
@@ -24,7 +24,7 @@ func main() {
 
 	// With the much higher expansion factor, instead of explicitly expanding
 	// the map we'll just apply the effect to the positions of the nodes.
-	erows, ecols := m.EmptySpace()
+	erows, ecols := lib.EmptySpace(m)
 
 	type gxy struct {
 		r, c int

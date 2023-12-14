@@ -4,8 +4,12 @@
 #
 set -euo pipefail
 
-# Use tomorrow's date, since puzzles ship at midnight ET.
-today="$(date -v +1d +%Y/%d)"
+# If it's before 9pm, use today's date; otherwise tomorrow.
+if [[ "$(date +%H)" -lt 21 ]] ; then
+    today="$(date +%Y/%d)"
+else
+    today="$(date -v +1d +%Y/%d)"
+fi
 if [[ -d "$today" ]] ; then
     echo "Directory $today is already set up" 1>&2
     exit 1
@@ -28,4 +32,3 @@ func main() {
 }
 EOF
 cp "${today}/part1/solve.go" "${today}/part2"
-

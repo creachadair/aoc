@@ -21,14 +21,21 @@ touch "${today}/puzzle.md" \
       "${today}/part2/puzzle.md"
 goimports >"${today}/lib.go" <<EOF
 package lib
-func OK(any) {}
+var OK string
 EOF
 goimports >"${today}/part1/solve.go" <<EOF
 package main
 import lib "github.com/creachadair/aoc/${today}"
+
+var _ = lib.OK
+
 func main() {
   flag.Parse()
-  lib.OK(aoc.MustReadInput())
+  m, err := aoc.ParseMap(aoc.MustReadLines())
+  if err != nil {
+    log.Fatalf("Parse map: %v", err)
+  }
+  fmt.Println(m)
 }
 EOF
 cp "${today}/part1/solve.go" "${today}/part2"

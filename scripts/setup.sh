@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # If it's before 9pm, use today's date; otherwise tomorrow.
-if [[ "$(date +%H)" -lt 21 ]] ; then
+if [[ "$(date +%k)" -lt 21 ]] ; then
     today="$(date +%Y/%d)"
 else
     today="$(date -v +1d +%Y/%d)"

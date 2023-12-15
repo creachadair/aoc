@@ -12,93 +12,65 @@ type Record struct {
 	Groups  []int
 }
 
-func (r Record) fillCount() int {
-	var n int
-	for _, g := range r.Groups {
-		n += g
+func Solve(r Record) int {
+	type skey struct {
+		pat  string
+		v    int
+		rest int
 	}
-	return len(r.Pattern) - n
-}
-
-// SumsOf calls f with each combination if k integers that sum to n.  The slice
-// passed to f is only valid for the duration of the call.
-func SumsOf(k, n int, f func([]int)) {
-	var sums func(int, []int, func())
-	sums = func(n int, buf []int, ready func()) {
-		if len(buf) == 1 {
-			buf[0] = n
-			ready()
-			return
-		}
-		for i := n; i >= 0; i-- {
-			buf[0] = i
-			sums(n-i, buf[1:], ready)
-		}
-	}
-	buf := make([]int, k)
-	sums(n, buf, func() { f(buf) })
-}
-
-func (r Record) at(i int, buf []int) byte {
-	pos := 0
-	for {
-		if i < buf[pos] {
-			return '.'
-		}
-		i -= buf[pos]
-		if i < r.Groups[pos] {
-			return '#'
-		}
-		i -= r.Groups[pos]
-		pos++
-	}
-}
-
-func (r Record) toString(buf []int) string {
-	out := strings.Repeat(".", buf[0])
-	for i, g := range r.Groups {
-		out += strings.Repeat("#", g)
-		out += strings.Repeat(".", buf[i+1])
-	}
-	return out
-}
-
-func (r Record) Solve(f func(soln string)) {
-	// n+1 gaps, 1 + (n-1) + 1
-	// spc is the amount of space we have to fill
-	spc := r.fillCount()
-	if spc < 0 {
-		panic("impossible record")
-	}
-
-	// If we have enough spacers, it is possible there may be spaces before and
-	// after all the required groups.
-	SumsOf(len(r.Groups)+1, spc, func(buf []int) {
-		// There must be at least one spacer between groups, so eliminate
-		// combinations that have a zero in the intermediate position.
-		for i := 1; i+1 < len(buf); i++ {
-			if buf[i] == 0 {
-				return
+	done := make(map[skey]int)
+	var solve func(string, int, []int) int
+	solve = func(pat string, seen int, want []int) (out int) {
+		key := skey{pat, seen, len(want)}
+		v, ok := done[key]
+		if !ok {
+			if pat == "" {
+				if len(want) == 0 && seen == 0 || len(want) == 1 && seen == want[0] {
+					return 1 // pattern complete
+				}
+				return 0 // pattern ended with unfinished groups
 			}
-		}
-
-		// Check whether the proposed result is compatible with the pattern,
-		// meaning at each position the solution matches the pattern, or at that
-		// position is a wildcard.
-		//
-		//   pat: #.??.#
-		//   ---
-		//   ok:  #.#..#
-		//   bad: ..##.#
-		//
-		for i := 0; i < len(r.Pattern); i++ {
-			got, c := r.at(i, buf), r.Pattern[i]
-			if got != c && c != '?' {
-				return // incompatible
+			var isFull, isPartial bool
+			if len(want) != 0 {
+				if seen == want[0] {
+					isFull = true
+					seen, want = 0, want[1:]
+				} else if seen > 0 {
+					isPartial = true
+				}
 			}
+
+			switch pat[0] {
+			case '#':
+				if !isFull {
+					v = solve(pat[1:], seen+1, want)
+				}
+				// Otherwise: The group is overfull.
+
+			case '.':
+				if isPartial {
+					return 0 // incomplete group
+				}
+				v = solve(pat[1:], seen, want)
+
+			case '?':
+				var dot, hash int
+				if !isFull {
+					hash = solve("#"+pat[1:], seen, want) // substitute "#"
+				}
+				if !isPartial {
+					dot = solve("."+pat[1:], seen, want) // substitute "."
+				}
+				v = dot + hash // cached by caller
+
+			default:
+				panic(fmt.Sprintf("invalid pattern word %c", pat[0]))
+			}
+			done[key] = v
 		}
-		f(r.toString(buf))
-	})
+		return v
+	}
+	return solve(r.Pattern, 0, r.Groups)
 }
 
 func ParseRecords(input []byte) ([]Record, error) {

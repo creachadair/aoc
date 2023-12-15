@@ -11,8 +11,6 @@ import (
 	"github.com/creachadair/aoc/aoc"
 )
 
-var _ = lib.Hash
-
 func main() {
 	flag.Parse()
 	input := strings.TrimSpace(string(aoc.MustReadInput()))
@@ -47,11 +45,9 @@ func main() {
 		label, focal, ok := strings.Cut(rule, "=")
 		if !ok {
 			remove(strings.TrimSuffix(label, "-"))
+		} else if v, err := strconv.Atoi(focal); err != nil {
+			log.Fatalf("Rule %d (%q): invalid focal length: %v", i+1, rule, err)
 		} else {
-			v, err := strconv.Atoi(focal)
-			if err != nil {
-				log.Fatalf("Rule %d (%q): invalid focal length: %v", i+1, rule, err)
-			}
 			replace(label, v)
 		}
 	}

@@ -31,6 +31,10 @@ func (m *Map) At(r, c int) byte     { return m.data[r*m.nc+c] }
 func (m *Map) Set(r, c int, b byte) { m.data[r*m.nc+c] = b }
 func (m *Map) Data() string         { return string(m.data) }
 
+func (m *Map) InBounds(r, c int) bool {
+	return r >= 0 && r < m.nr && c >= 0 && c < m.nc
+}
+
 // Clone returns a copy of m with the same content.
 func (m *Map) Clone() *Map {
 	return &Map{nr: m.nr, nc: m.nc, data: bytes.Clone(m.data)}

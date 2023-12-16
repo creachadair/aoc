@@ -31,6 +31,17 @@ func (m *Map) At(r, c int) byte     { return m.data[r*m.nc+c] }
 func (m *Map) Set(r, c int, b byte) { m.data[r*m.nc+c] = b }
 func (m *Map) Data() string         { return string(m.data) }
 
+// RowStrings returns a copy of all the rows of m as strings.
+func (m *Map) RowStrings() []string {
+	out := make([]string, 0, m.Rows())
+	data := string(m.data)
+	for i := 0; i < len(data); i += m.nc {
+		out = append(out, data[i:i+m.nc])
+	}
+	return out
+}
+
+// InBounds reports whether r, c is in-bounds for the map.
 func (m *Map) InBounds(r, c int) bool {
 	return r >= 0 && r < m.nr && c >= 0 && c < m.nc
 }

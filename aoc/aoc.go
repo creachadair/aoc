@@ -16,6 +16,8 @@ import (
 
 var doDebug = flag.Bool("debug", false, "Enable debug output")
 
+// Dprintf acts as log.Printf if the --debug flag is set; otherwise it discards
+// its input.
 func Dprintf(msg string, args ...any) {
 	if *doDebug {
 		log.Printf(msg, args...)

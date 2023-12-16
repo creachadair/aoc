@@ -68,12 +68,15 @@ func ParseInts(ss []string) ([]int, error) {
 // to one of these types:
 //
 //	int      -- a (signed) decimal integer
-//	[]int    -- multiple whitespace-separated decimal integers
+//	[]int    -- multiple separated decimal integers (see below)
 //	string   -- a single string
-//	[]string -- a slice of whitespace-separated strings
+//	[]string -- a slice of separated strings (see below)
 //	encoding.TextUnmarshaler
 //
 // Each match is decoded into the target argument, or an error is reported.
+//
+// By default, multiple values are separated by whitespace.
+// Name the capture group "comma" to split on commas.
 func Scanx(re *regexp.Regexp, input string, args ...any) error {
 	if n := re.NumSubexp(); n != len(args) {
 		return fmt.Errorf("want %d subexpressions, got %d", len(args), n)
@@ -88,11 +91,11 @@ func Scanx(re *regexp.Regexp, input string, args ...any) error {
 		case *int:
 			err = parseInt(sub, arg)
 		case *[]int:
-			*arg, err = ParseInts(strings.Fields(sub))
+			*arg, err = ParseInts(splitFields(sub, re.SubexpNames()[i+1]))
 		case *string:
 			*arg = sub
 		case *[]string:
-			*arg = strings.Fields(sub)
+			*arg = splitFields(sub, re.SubexpNames()[i+1])
 		case encoding.TextUnmarshaler:
 			err = arg.UnmarshalText([]byte(sub))
 		default:
@@ -112,4 +115,13 @@ func parseInt[T constraints.Integer](s string, vp *T) error {
 	}
 	*vp = T(v)
 	return nil
+}
+
+func splitFields(s, name string) []string {
+	switch name {
+	case "comma":
+		return strings.Split(s, ",")
+	default:
+		return strings.Fields(s)
+	}
 }

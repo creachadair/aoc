@@ -23,7 +23,7 @@ func (t *thing) UnmarshalText(data []byte) error {
 }
 
 func TestScanx(t *testing.T) {
-	re := regexp.MustCompile(`Z=(\d+), *ZL=(\d+(?: \d+)*), *S=([^,]+), *L=(\w+(?: *\w+)*), *T=(.+)$`)
+	re := regexp.MustCompile(`Z=(\d+), *ZL=(?P<comma>\d+(?:,\d+)*), *S=([^,]+), *L=(?P<words>\w+(?: *\w+)*), *T=(.+)$`)
 
 	type data struct {
 		Z  int
@@ -34,7 +34,7 @@ func TestScanx(t *testing.T) {
 	}
 
 	var got data
-	if err := aoc.Scanx(re, `Z=122,ZL=1 15 19, S=alpha beta gamma, L=foo bar  baz,     T=<wheep>`,
+	if err := aoc.Scanx(re, `Z=122,ZL=1,15,19, S=alpha beta gamma, L=foo bar  baz,     T=<wheep>`,
 		&got.Z, &got.Zs, &got.S, &got.Ss, &got.T); err != nil {
 		t.Fatalf("Scanx: unexpected error: %v", err)
 	}

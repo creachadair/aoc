@@ -2,7 +2,7 @@ package lib
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/creachadair/aoc/aoc"
 )
@@ -89,21 +89,16 @@ func Solve(r Record) int {
 	return solve(r.Pattern, 0, r.Groups)
 }
 
+var recRE = regexp.MustCompile(`^(\S+) (?P<comma>\d+(?:,\d+)*)$`)
+
 func ParseRecords(input []byte) ([]Record, error) {
 	var recs []Record
 	for i, line := range aoc.SplitLines(input) {
-		fs := strings.Fields(line)
-		if len(fs) != 2 {
-			return nil, fmt.Errorf("line %d: got %d fields, want 2", i+1, len(fs))
+		var rec Record
+		if err := aoc.Scanx(recRE, line, &rec.Pattern, &rec.Groups); err != nil {
+			return nil, fmt.Errorf("line %d: %w", i+1, err)
 		}
-		gs, err := aoc.ParseInts(strings.Split(fs[1], ","))
-		if err != nil {
-			return nil, fmt.Errorf("line %d: invalid groups: %w", i+1, err)
-		}
-		recs = append(recs, Record{
-			Pattern: fs[0],
-			Groups:  gs,
-		})
+		recs = append(recs, rec)
 	}
 	return recs, nil
 }

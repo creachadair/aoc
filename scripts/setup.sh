@@ -27,8 +27,6 @@ goimports >"${today}/part1/solve.go" <<EOF
 package main
 import lib "github.com/creachadair/aoc/${today}"
 
-var _ = lib.OK
-
 func main() {
   flag.Parse()
   m, err := aoc.ParseMap(aoc.MustReadLines())
@@ -36,6 +34,8 @@ func main() {
     log.Fatalf("Parse map: %v", err)
   }
   fmt.Println(m)
+
+  var _ = lib.OK
 }
 EOF
 cp "${today}/part1/solve.go" "${today}/part2"

@@ -14,6 +14,14 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+var doDebug = flag.Bool("debug", false, "Enable debug output")
+
+func Dprintf(msg string, args ...any) {
+	if *doDebug {
+		log.Printf(msg, args...)
+	}
+}
+
 // MustReadInput reads the contents of the first command-line argument, or if
 // none is specified it fully consumes the contents of stdin.  In case of
 // error, MustReadInput calls log.Fatal.

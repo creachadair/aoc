@@ -2,16 +2,12 @@ package lib
 
 import (
 	"errors"
-	"flag"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
 	"github.com/creachadair/aoc/aoc"
 )
-
-var doDebug = flag.Bool("debug", false, "Enable debug logging")
 
 type Insn struct {
 	Label string
@@ -42,12 +38,6 @@ func (p *Pgm) Find(label string) Insn {
 	panic("missing label: " + label)
 }
 
-func dprintf(msg string, args ...any) {
-	if *doDebug {
-		log.Printf(msg, args...)
-	}
-}
-
 type Iter struct {
 	pgm *Pgm
 	cur *Insn
@@ -69,7 +59,7 @@ func (it *Iter) Next() (int, string) {
 	default:
 		panic("invalid step: " + string(dir))
 	}
-	dprintf("step %d: from %q go %c to %q", it.ns, it.cur.Label, dir, next)
+	aoc.Dprintf("step %d: from %q go %c to %q", it.ns, it.cur.Label, dir, next)
 	it.cur = it.pgm.next[next]
 	if it.cur == nil {
 		panic("node not found: " + next)

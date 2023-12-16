@@ -2,7 +2,7 @@ package lib
 
 import (
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/creachadair/aoc/aoc"
 )
@@ -42,11 +42,13 @@ func (s Seq) IsConst() bool {
 	return true
 }
 
+var seqRE = regexp.MustCompile(`(\d+(?: +\d+)*)$`)
+
 func ParseSeq(input []byte) ([]Seq, error) {
 	var seqs []Seq
 	for i, line := range aoc.SplitLines(input) {
-		vs, err := aoc.ParseInts(strings.Fields(line))
-		if err != nil {
+		var vs []int
+		if err := aoc.Scanx(seqRE, line, &vs); err != nil {
 			return nil, fmt.Errorf("line %d: %w", i+1, err)
 		}
 		seqs = append(seqs, Seq(vs))

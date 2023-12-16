@@ -22,7 +22,7 @@ func main() {
 
 	adj := make(map[[2]int][]int)
 	num := regexp.MustCompile(`\d+`)
-	for r, row := range sch {
+	for r, row := range sch.RowStrings() {
 		for _, hit := range num.FindAllStringIndex(row, -1) {
 			val, err := strconv.Atoi(row[hit[0]:hit[1]])
 			if err != nil {

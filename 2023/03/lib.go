@@ -1,21 +1,16 @@
 package lib
 
 import (
-	"fmt"
-
 	"github.com/creachadair/aoc/aoc"
 )
 
-type Schematic []string
-
-func (s Schematic) Rows() int { return len(s) }
-func (s Schematic) Cols() int { return len(s[0]) }
+type Schematic struct{ *aoc.Map }
 
 func (s Schematic) At(row, col int) byte {
-	if row < 0 || row >= len(s) || col < 0 || col >= len(s[0]) {
-		return '.'
+	if s.Map.InBounds(row, col) {
+		return s.Map.At(row, col)
 	}
-	return s[row][col]
+	return '.'
 }
 
 func isSymbol(b byte) bool {
@@ -40,7 +35,7 @@ func (s Schematic) adjSymbol(row, col int) (r, c int) {
 }
 
 func (s Schematic) LabelOf(row, lo, hi int) (r, c int) {
-	if row < 0 || row >= len(s) {
+	if row < 0 || row >= s.Map.Rows() {
 		return -1, -1
 	}
 	for col := lo; col < hi; col++ {
@@ -57,15 +52,9 @@ func (s Schematic) IsLabel(row, lo, hi int) bool {
 }
 
 func ParseSchematic(input []byte) (Schematic, error) {
-	var cols int
-	var out Schematic
-	for i, line := range aoc.SplitLines(input) {
-		if cols == 0 {
-			cols = len(line)
-		} else if len(line) != cols {
-			return nil, fmt.Errorf("line %d: want %d cols, got %d", i+1, cols, len(line))
-		}
-		out = append(out, line)
+	m, err := aoc.ParseMap(aoc.SplitLines(input))
+	if err != nil {
+		return Schematic{}, err
 	}
-	return out, nil
+	return Schematic{Map: m}, nil
 }

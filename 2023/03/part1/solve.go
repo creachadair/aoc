@@ -22,7 +22,7 @@ func main() {
 
 	num := regexp.MustCompile(`\d+`)
 	var sum int
-	for r, row := range sch {
+	for r, row := range sch.RowStrings() {
 		for _, hit := range num.FindAllStringIndex(row, -1) {
 			val, err := strconv.Atoi(row[hit[0]:hit[1]])
 			if err != nil {

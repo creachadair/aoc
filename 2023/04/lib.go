@@ -1,10 +1,8 @@
 package lib
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/creachadair/aoc/aoc"
@@ -60,34 +58,11 @@ func (c Cards) String() string {
 
 var cardRE = regexp.MustCompile(`^Card +(\d+):((?: +\d+)+) \|((?: +\d+)+)$`)
 
-func parseCard(data string) (Card, error) {
-	m := cardRE.FindStringSubmatch(data)
-	if m == nil {
-		return Card{}, errors.New("invalid card format")
-	}
-	c := Card{ID: mustParseInt(m[1])}
-	for _, win := range strings.Fields(m[2]) {
-		c.Win = append(c.Win, mustParseInt(win))
-	}
-	for _, num := range strings.Fields(m[3]) {
-		c.Num = append(c.Num, mustParseInt(num))
-	}
-	return c, nil
-}
-
-func mustParseInt(s string) int {
-	v, err := strconv.Atoi(s)
-	if err != nil {
-		panic(err)
-	}
-	return v
-}
-
 func ParseCards(input []byte) (Cards, error) {
 	var cards Cards
 	for i, line := range aoc.SplitLines(input) {
-		c, err := parseCard(line)
-		if err != nil {
+		var c Card
+		if err := aoc.Scanx(cardRE, line, &c.ID, &c.Win, &c.Num); err != nil {
 			return nil, fmt.Errorf("line %d: invalid card: %w", i+1, err)
 		}
 		cards = append(cards, c)

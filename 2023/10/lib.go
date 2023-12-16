@@ -1,43 +1,44 @@
 package lib
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/creachadair/aoc/aoc"
 )
 
-type Grid struct {
-	nr, nc int
-	data   []byte // r1 ... rc r2 ... rc r3 ... rc ...
-}
+type Grid struct{ *aoc.Map }
 
-func (g *Grid) Rows() int { return g.nr }
-func (g *Grid) Cols() int { return g.nc }
-
-func (g *Grid) At(r, c int) byte {
-	if r < 0 || r >= g.nr || c < 0 || c >= g.nc {
-		return '.'
+func (g Grid) At(r, c int) byte {
+	if g.Map.InBounds(r, c) {
+		return g.Map.At(r, c) &^ 0x80 // filter markers off
 	}
-	return g.data[r*g.nc+c] &^ 0x80 // filter markers off
+	return '.'
 }
 
 // Since the puzzle input is ASCII, use the high-order bit of each byte as a
 // marker for which cells belong to the path.
 
-func (g *Grid) setPath(r, c int) { g.data[r*g.nc+c] |= 0x80 }
+func (g Grid) setPath(r, c int) { g.Set(r, c, g.At(r, c)|0x80) }
+
+func (g Grid) resetPath() {
+	for r := 0; r < g.Rows(); r++ {
+		for c := 0; c < g.Cols(); c++ {
+			g.Set(r, c, g.Map.At(r, c)&^0x80)
+		}
+	}
+}
 
 // IsPath reports whether r, c is on the selected path.
-func (g *Grid) IsPath(r, c int) bool { return g.data[r*g.nc+c]&0x80 != 0 }
+func (g Grid) IsPath(r, c int) bool { return g.Map.At(r, c)&0x80 != 0 }
 
 // Mark labels cell r, c with a cosmetic marker for display.
-func (g Grid) Mark(r, c int) { g.data[r*g.nc+c] = '*' }
+func (g Grid) Mark(r, c int) { g.Set(r, c, '*') }
 
 // Start locates the position of the "S" marker.
-func (g *Grid) Start() (r, c int) {
-	for r = 0; r < g.nr; r++ {
-		for c = 0; c < g.nc; c++ {
+func (g Grid) Start() (r, c int) {
+	for r = 0; r < g.Rows(); r++ {
+		for c = 0; c < g.Cols(); c++ {
 			if g.At(r, c) == 'S' {
 				return
 			}
@@ -53,10 +54,8 @@ type Loop struct {
 	StartShape byte // the path shape under "S"
 }
 
-func (g *Grid) FindLoop(r, c int) Loop {
-	for i := range g.data {
-		g.data[i] &^= 0x80 // clear existing path marks
-	}
+func (g Grid) FindLoop(r, c int) Loop {
+	g.resetPath() // clear existing path marks
 	a, b, startShape := g.seeds(r, c)
 	g.setPath(r, c)
 	g.setPath(a[0], a[1])
@@ -76,7 +75,7 @@ func (g *Grid) FindLoop(r, c int) Loop {
 	return Loop{Start: Cell{r, c}, Max: dist, StartShape: startShape}
 }
 
-func (g *Grid) IsInside(loop Loop, r, c int) bool {
+func (g Grid) IsInside(loop Loop, r, c int) bool {
 	// All the paths from a fully-enclosed position to any edge of the map must
 	// cross the boundary an odd number of times.
 	//
@@ -100,7 +99,7 @@ func (g *Grid) IsInside(loop Loop, r, c int) bool {
 
 	var cross int
 	var pathStart byte
-	for h := c; h < g.nc; h++ {
+	for h := c; h < g.Cols(); h++ {
 		cur := byte('.')
 		if g.IsPath(r, h) {
 			cur = g.At(r, h)
@@ -150,7 +149,7 @@ const (
 
 var startShape = []byte{up | right: 'L', up | down: '|', up | left: 'J', down | left: '7', down | right: 'F', right | left: '-'}
 
-func (g *Grid) seeds(r, c int) (a, b Cell, start byte) {
+func (g Grid) seeds(r, c int) (a, b Cell, start byte) {
 	var out []Cell
 	var dir byte
 	if p := g.At(r-1, c); p == '|' || p == 'F' || p == '7' {
@@ -173,7 +172,7 @@ func (g *Grid) seeds(r, c int) (a, b Cell, start byte) {
 	return out[0], out[1], startShape[dir]
 }
 
-func (g *Grid) exit(cell Cell) Cell {
+func (g Grid) exit(cell Cell) Cell {
 	r, c := cell[0], cell[1]
 	switch g.At(r, c) {
 	case '-':
@@ -207,14 +206,14 @@ func (g *Grid) exit(cell Cell) Cell {
 		}
 		return Cell{r - 1, c}
 	default:
-		panic(fmt.Sprintf("no exit from %d,%d", r, c))
+		panic(fmt.Sprintf("no exit from %d,%d [%c]", r, c, g.At(r, c)))
 	}
 }
 
-func (g *Grid) CleanString() string {
+func (g Grid) CleanString() string {
 	var buf strings.Builder
-	for r := 0; r < g.nr; r++ {
-		for c := 0; c < g.nc; c++ {
+	for r := 0; r < g.Rows(); r++ {
+		for c := 0; c < g.Cols(); c++ {
 			cur := g.At(r, c)
 			if g.IsPath(r, c) || cur == '*' {
 				buf.WriteByte(cur)
@@ -227,18 +226,10 @@ func (g *Grid) CleanString() string {
 	return buf.String()
 }
 
-func ParseGrid(input []byte) (*Grid, error) {
-	lines := aoc.SplitLines(input)
-	if len(lines) == 0 {
-		return nil, errors.New("empty grid")
+func ParseGrid(input []byte) (Grid, error) {
+	m, err := aoc.ParseMap(aoc.SplitLines(input))
+	if err != nil {
+		return Grid{}, err
 	}
-	out := &Grid{
-		nr:   len(lines),
-		nc:   len(lines[0]),
-		data: make([]byte, 0, len(lines)*len(lines[0])),
-	}
-	for _, line := range lines {
-		out.data = append(out.data, line...)
-	}
-	return out, nil
+	return Grid{Map: m}, nil
 }

@@ -33,13 +33,17 @@ func (b *Beam) String() string {
 }
 
 func CountEnergized(m *aoc.Map) int {
+	return CountEnergizedFrom(m, 0, 0, 0, 1) // top-left, facing right
+}
+
+func CountEnergizedFrom(m *aoc.Map, r, c, rv, cv int) int {
 	// Avoid repeating beams.
 	seen := mapset.New[Beam]()
 	beams := mlink.NewQueue[*Beam]()
 	add := func(r, c, rv, cv int) {
 		beams.Add(&Beam{r, c, rv, cv})
 	}
-	add(0, 0, 0, 1) // top-left, facing right
+	add(r, c, rv, cv)
 
 	type cell struct{ r, c int }
 	lit := mapset.New[cell]()

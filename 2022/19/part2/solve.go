@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/creachadair/aoc/2022/19/robot"
-	"github.com/creachadair/mds/mlink"
+	"github.com/creachadair/mds/stack"
 	"github.com/creachadair/taskgroup"
 )
 
@@ -77,7 +77,7 @@ func search(s robot.State, obj func(robot.State) int, estimate func(robot.State)
 	bound := 0
 	best := s
 
-	q := mlink.NewStack[robot.State]()
+	q := stack.New[robot.State]()
 	q.Add(s)
 
 	pruned, total, skipped := 0, 0, 0

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/creachadair/mds/mlink"
+	"github.com/creachadair/mds/stack"
 )
 
 // A Rule is the parsed format of a puzzle input. As read from the input,
@@ -94,7 +94,7 @@ func (g *Graph) topoSort() []string {
 	var finished []string
 	seen := make(map[string]bool)
 
-	q := mlink.NewStack[string]()
+	q := stack.New[string]()
 	q.Add("root")
 
 	for !q.IsEmpty() {

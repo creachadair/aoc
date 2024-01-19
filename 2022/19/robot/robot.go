@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/creachadair/mds/mlink"
+	"github.com/creachadair/mds/stack"
 )
 
 var printRE = regexp.MustCompile(`(?m)Blueprint (\d+):` +
@@ -208,7 +208,7 @@ func SolveStats(s State) (stats Stats) {
 		return false
 	}
 
-	q := mlink.NewStack[State]()
+	q := stack.New[State]()
 	q.Add(s)
 	for !q.IsEmpty() {
 		next, _ := q.Pop()
@@ -255,7 +255,7 @@ func solveAllSeen(s State, seen map[State]bool) (stats Stats, _ [][]State) {
 		return false
 	}
 
-	q := mlink.NewStack[Entry]()
+	q := stack.New[Entry]()
 	q.Add(Entry{State: s})
 	for !q.IsEmpty() {
 		e, _ := q.Pop()

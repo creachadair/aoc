@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
-
-	"github.com/creachadair/mds/slice"
 )
 
 // NewMap constructs a new map from the specified data.
@@ -106,7 +105,7 @@ func min(a, b int) int {
 func (m *Map) FlipH() *Map {
 	for r := 0; r < m.nr; r++ {
 		base := r * m.nc
-		slice.Reverse(m.data[base : base+m.nc])
+		slices.Reverse(m.data[base : base+m.nc])
 	}
 	return m
 }

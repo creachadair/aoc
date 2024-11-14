@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/creachadair/mds/mlink"
+	"github.com/creachadair/mds/ring"
 )
 
-type State []*mlink.Ring[int]
+type State []*ring.Ring[int]
 
 func MustParse(path string) State {
 	data, err := os.ReadFile(path)
@@ -29,7 +29,7 @@ func MustParse(path string) State {
 }
 
 func NewState(values []int) State {
-	r := mlink.RingOf(values...)
+	r := ring.Of(values...)
 	out := make(State, len(values))
 	for i, cur := 0, r; i < len(values); i++ {
 		out[i] = cur
@@ -44,7 +44,7 @@ func (s State) Mix() {
 	}
 }
 
-func (s State) findValue(v int) *mlink.Ring[int] {
+func (s State) findValue(v int) *ring.Ring[int] {
 	for _, cur := range s {
 		if cur.Value == v {
 			return cur

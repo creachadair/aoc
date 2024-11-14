@@ -40,13 +40,13 @@ func expandSeeds(spec []int, f func(seed int, min *int)) []int {
 	g := taskgroup.New(nil)
 	for i := 0; i+1 < len(spec); i += 2 {
 		i, min := i, &mins[i/2]
-		g.Go(taskgroup.NoError(func() {
+		g.Run(func() {
 			log.Printf("Seed range: (%d..%d)", spec[i], spec[i]+spec[i+1])
 			for j := 0; j < spec[i+1]; j++ {
 				f(spec[i]+j, min)
 			}
 			log.Printf(" done range (%d..%d)", spec[i], spec[i]+spec[i+1])
-		}))
+		})
 	}
 	g.Wait()
 	return mins
